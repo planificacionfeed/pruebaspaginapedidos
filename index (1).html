@@ -1,0 +1,1031 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>FEED — Pedido Semanal YPF</title>
+  <link href="https://fonts.googleapis.com/css2?family=Suez+One&family=Lato:wght@300;400;700&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --ink:      #1D1D1B;
+      --ink-soft: #4A4845;
+      --cream:    #F7F4EE;
+      --cream-dk: #EDEAE2;
+      --white:    #FFFFFF;
+      --line:     #D8D4CB;
+      --accent2:  #7C6F5B;
+      --ok:       #2E6B4A;
+      --ok-bg:    #EAF4EE;
+      --ok-br:    #9ECDB5;
+      --warn-bg:  #FDF6E3;
+      --warn-br:  #C8A84B;
+      --err:      #B03A2E;
+      --radius:   10px;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body { font-family: 'Lato', sans-serif; background: var(--cream); color: var(--ink); min-height: 100vh; display: flex; flex-direction: column; }
+
+    /* HEADER */
+    header { background: var(--white); border-bottom: 1.5px solid var(--line); padding: 0 40px; height: 72px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 200; }
+    .header-tag { font-size: 0.68rem; font-weight: 700; letter-spacing: 3px; text-transform: uppercase; color: var(--accent2); }
+
+    /* HERO */
+    .hero { background: var(--ink); color: var(--white); padding: 52px 40px 44px; position: relative; overflow: hidden; }
+    .hero::before { content: ''; position: absolute; inset: 0; background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E"); opacity: 0.4; pointer-events: none; }
+    .hero-inner { position: relative; max-width: 860px; margin: 0 auto; }
+    .hero-eyebrow { font-size: 0.7rem; font-weight: 700; letter-spacing: 3.5px; text-transform: uppercase; color: rgba(255,255,255,0.4); margin-bottom: 12px; }
+    .hero h1 { font-family: 'Suez One', serif; font-size: clamp(2rem, 5vw, 3.4rem); line-height: 1.05; margin-bottom: 12px; }
+    .hero p { font-size: 0.93rem; color: rgba(255,255,255,0.58); max-width: 400px; line-height: 1.65; }
+    .week-pill { display: inline-flex; align-items: center; gap: 8px; margin-top: 20px; background: rgba(255,255,255,0.09); border: 1px solid rgba(255,255,255,0.16); border-radius: 4px; padding: 7px 16px; font-size: 0.81rem; font-weight: 700; letter-spacing: 0.5px; color: rgba(255,255,255,0.82); }
+    .week-pill::before { content: ''; display: inline-block; width: 7px; height: 7px; background: #C8A84B; border-radius: 50%; }
+
+    /* CONTAINER */
+    .container { max-width: 860px; margin: 0 auto; padding: 36px 20px 100px; flex: 1; }
+
+    /* CARD */
+    .card { background: var(--white); border: 1.5px solid var(--line); border-radius: var(--radius); padding: 32px 36px; margin-bottom: 24px; }
+    .card-label { font-size: 0.67rem; font-weight: 700; letter-spacing: 3px; text-transform: uppercase; color: var(--accent2); margin-bottom: 6px; }
+    .card h2 { font-family: 'Suez One', serif; font-size: 1.4rem; color: var(--ink); margin-bottom: 22px; line-height: 1.2; }
+
+    /* SEDE SELECTOR */
+    .sede-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+    .sede-grid.single-sede { grid-template-columns: 1fr; max-width: 380px; }
+    .sede-card { border: 1.5px solid var(--line); border-radius: var(--radius); padding: 22px 24px; cursor: pointer; transition: border-color .18s, background .18s; background: var(--cream); position: relative; display: block; }
+    .sede-card:hover { border-color: var(--accent2); background: var(--cream-dk); }
+    .sede-card.has-pedido { border-color: var(--ok-br); background: var(--ok-bg); }
+    .sede-card.has-pedido:hover { border-color: var(--ok); background: #DDF0E8; }
+    .sede-card .sede-name { font-family: 'Suez One', serif; font-size: 1.15rem; margin-bottom: 5px; }
+    .sede-card .sede-days { font-size: 0.77rem; color: var(--ink-soft); }
+    .pedido-chip { display: none; align-items: center; gap: 6px; margin-top: 10px; background: var(--ok-bg); border: 1px solid var(--ok-br); color: var(--ok); font-size: 0.72rem; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; padding: 4px 10px; border-radius: 4px; width: fit-content; }
+    .sede-card.has-pedido .pedido-chip { display: flex; }
+    .sede-check { position: absolute; top: 16px; right: 16px; width: 28px; height: 28px; border-radius: 50%; border: 1.5px solid var(--line); background: var(--white); display: flex; align-items: center; justify-content: center; font-size: 0.8rem; color: transparent; transition: all .2s; }
+    .sede-card.has-pedido .sede-check { background: var(--ok); border-color: var(--ok); color: white; }
+    .sede-cta { display: flex; align-items: center; gap: 6px; margin-top: 14px; font-size: 0.78rem; font-weight: 700; color: var(--ink); letter-spacing: 0.5px; text-transform: uppercase; transition: gap .15s; }
+    .sede-card:hover .sede-cta { gap: 10px; }
+    .sede-card.has-pedido .sede-cta-nuevo { display: none; }
+    .sede-cta-editar { display: none; }
+    .sede-card.has-pedido .sede-cta-editar { display: flex; align-items: center; gap: 6px; margin-top: 14px; font-size: 0.78rem; font-weight: 700; color: var(--ok); letter-spacing: 0.5px; text-transform: uppercase; transition: gap .15s; }
+    .sede-card.has-pedido:hover .sede-cta-editar { gap: 10px; }
+
+    /* ORDER SECTION */
+    #order-section { display: none; }
+    .order-sede-label { display: flex; align-items: center; gap: 12px; margin-bottom: 6px; }
+    .deadline-strip { background: var(--warn-bg); border: 1px solid var(--warn-br); border-radius: 8px; padding: 11px 16px; display: flex; align-items: flex-start; gap: 10px; font-size: 0.83rem; color: #6B4E00; margin-bottom: 22px; line-height: 1.5; }
+    .deadline-strip .di { flex-shrink: 0; margin-top: 1px; }
+    .edit-strip { background: #EAF4EE; border: 1px solid var(--ok-br); border-radius: 8px; padding: 11px 16px; display: none; align-items: flex-start; gap: 10px; font-size: 0.83rem; color: var(--ok); margin-bottom: 22px; line-height: 1.5; }
+    .edit-strip.visible { display: flex; }
+    .edit-strip .di { flex-shrink: 0; margin-top: 1px; }
+
+    /* DAY TABS */
+    .day-tabs { display: flex; flex-wrap: wrap; border-bottom: 1.5px solid var(--line); margin-bottom: 22px; }
+    .day-tab { padding: 9px 18px 12px; border: none; border-bottom: 3px solid transparent; background: transparent; font-size: 0.83rem; font-weight: 700; font-family: 'Lato', sans-serif; cursor: pointer; transition: all .15s; color: var(--ink-soft); margin-bottom: -1.5px; white-space: nowrap; }
+    .day-tab:hover { color: var(--ink); }
+    .day-tab.active { color: var(--ink); border-bottom-color: var(--ink); }
+    .day-tab .dot { display: inline-block; width: 6px; height: 6px; background: var(--warn-br); border-radius: 50%; margin-left: 5px; vertical-align: middle; opacity: 0; transition: opacity .2s; }
+    .day-tab .dot.visible { opacity: 1; }
+
+    /* DAY PANELS */
+    .day-panel { display: none; }
+    .day-panel.active { display: block; }
+    .day-header { display: flex; align-items: baseline; gap: 12px; margin-bottom: 18px; }
+    .day-header h3 { font-family: 'Suez One', serif; font-size: 1.2rem; }
+    .day-header .date-str { font-size: 0.8rem; color: var(--ink-soft); }
+
+    /* PRODUCT TABLE */
+    table.ptable { width: 100%; border-collapse: collapse; }
+    table.ptable thead tr { border-bottom: 2px solid var(--ink); }
+    table.ptable th { padding: 8px 12px; text-align: left; font-size: 0.67rem; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; color: var(--ink-soft); }
+    table.ptable th:last-child { text-align: center; }
+    table.ptable td { padding: 14px 12px; border-bottom: 1px solid var(--cream-dk); font-size: 0.88rem; vertical-align: middle; }
+    table.ptable tr:last-child td { border-bottom: none; }
+    table.ptable tr:hover td { background: var(--cream); }
+    table.ptable td.code { font-family: 'Courier New', monospace; font-size: 0.75rem; color: var(--ink-soft); }
+    table.ptable td:last-child { text-align: center; }
+
+    /* ── CATEGORY CHIPS ── */
+    .cat-chip {
+      display: inline-block;
+      font-family: 'Courier New', monospace;
+      font-size: 0.72rem;
+      font-weight: 700;
+      letter-spacing: 0.3px;
+      padding: 3px 8px;
+      border-radius: 4px;
+      white-space: nowrap;
+    }
+    .cat-Ensalada { background: #5BBF6A; color: #fff; }
+    .cat-Bowl     { background: #F5C518; color: #1D1D1B; }
+    .cat-Platos   { background: #8B6347; color: #fff; }
+    .cat-Sopa     { background: #F4A0B0; color: #1D1D1B; }
+
+    /* QTY */
+    .qty-wrap { display: inline-flex; align-items: center; border: 1.5px solid var(--line); border-radius: 6px; overflow: hidden; background: var(--white); }
+    .qty-btn { width: 34px; height: 34px; border: none; background: var(--cream); font-size: 1.1rem; cursor: pointer; color: var(--ink); display: flex; align-items: center; justify-content: center; transition: background .12s; }
+    .qty-btn:hover { background: var(--cream-dk); }
+    .qty-input { width: 48px; height: 34px; text-align: center; border: none; border-left: 1px solid var(--line); border-right: 1px solid var(--line); font-size: 0.92rem; font-family: 'Lato', sans-serif; font-weight: 700; background: var(--white); color: var(--ink); -moz-appearance: textfield; }
+    .qty-input::-webkit-inner-spin-button, .qty-input::-webkit-outer-spin-button { -webkit-appearance: none; }
+    .qty-input:focus { outline: none; background: #FFFEF8; }
+
+    /* RESUMEN */
+    .summary-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(155px, 1fr)); gap: 10px; margin-bottom: 26px; }
+    .s-day { background: var(--cream); border: 1px solid var(--line); border-radius: 8px; padding: 13px 15px; }
+    .s-day-name { font-size: 0.67rem; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; color: var(--accent2); margin-bottom: 7px; }
+    .s-item { font-size: 0.79rem; color: var(--ink-soft); margin-bottom: 2px; line-height: 1.4; }
+    .s-empty { font-size: 0.77rem; color: var(--line); font-style: italic; }
+    .divider { height: 1px; background: var(--cream-dk); margin: 22px 0; }
+
+    /* SUBMIT */
+    .submit-row { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 16px; }
+    .submit-note { font-size: 0.8rem; color: var(--ink-soft); max-width: 360px; line-height: 1.5; }
+    .btn-confirm { background: var(--ink); color: var(--white); border: 2px solid var(--ink); padding: 14px 44px; border-radius: 6px; font-size: 0.85rem; font-weight: 700; font-family: 'Lato', sans-serif; letter-spacing: 1.5px; text-transform: uppercase; cursor: pointer; transition: background .18s, color .18s, transform .15s; white-space: nowrap; }
+    .btn-confirm:hover { background: var(--white); color: var(--ink); transform: translateY(-1px); }
+    .btn-confirm:disabled { background: var(--line); border-color: var(--line); color: var(--white); cursor: not-allowed; transform: none; }
+    .err-strip { background: #FDECEA; border: 1px solid #E8998F; border-radius: 8px; padding: 11px 16px; font-size: 0.83rem; color: var(--err); margin-top: 14px; display: none; line-height: 1.5; }
+
+    /* SUCCESS */
+    #success-screen { display: none; max-width: 520px; margin: 72px auto; text-align: center; padding: 0 20px; }
+    .success-icon { width: 68px; height: 68px; background: var(--ok); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 26px; font-size: 1.8rem; color: white; }
+    #success-screen h2 { font-family: 'Suez One', serif; font-size: 1.9rem; color: var(--ink); margin-bottom: 10px; }
+    #success-screen .success-sede { display: inline-block; background: var(--ink); color: white; font-size: 0.75rem; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; padding: 5px 14px; border-radius: 4px; margin-bottom: 16px; }
+    #success-screen p { font-size: 0.92rem; color: var(--ink-soft); line-height: 1.65; margin-bottom: 30px; max-width: 380px; margin-left: auto; margin-right: auto; }
+    .btn-back { display: inline-block; padding: 13px 36px; border: 2px solid var(--ink); border-radius: 6px; color: var(--ink); font-weight: 700; font-size: 0.82rem; letter-spacing: 1.5px; text-transform: uppercase; cursor: pointer; background: transparent; font-family: 'Lato', sans-serif; transition: all .18s; }
+    .btn-back:hover { background: var(--ink); color: var(--white); }
+
+    /* SPINNER */
+    .spinner { display: inline-block; width: 14px; height: 14px; border: 2px solid rgba(255,255,255,0.35); border-top-color: #fff; border-radius: 50%; animation: spin .6s linear infinite; vertical-align: middle; margin-right: 8px; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* FOOTER */
+    footer { border-top: 1.5px solid var(--line); padding: 20px 40px; display: flex; align-items: center; justify-content: space-between; font-size: 0.75rem; color: var(--ink-soft); background: var(--white); }
+    footer a { color: var(--ink-soft); text-decoration: none; }
+    footer a:hover { color: var(--ink); }
+
+    /* BANNERS */
+    .pedido-realizado-banner { background: var(--ok-bg); border: 1.5px solid var(--ok-br); border-radius: var(--radius); padding: 14px 20px; display: flex; align-items: center; gap: 12px; margin-bottom: 20px; font-size: 0.88rem; color: var(--ok); line-height: 1.5; }
+    .pedido-realizado-banner .prb-icon { font-size: 1.2rem; flex-shrink: 0; }
+    .pedido-realizado-banner strong { color: #1A4D33; }
+    .deadline-passed-banner { background: #FEF3E2; border: 1.5px solid #D4900A; border-radius: var(--radius); padding: 16px 22px; display: flex; align-items: flex-start; gap: 14px; margin-bottom: 20px; font-size: 0.88rem; color: #7A4F00; line-height: 1.55; }
+    .deadline-passed-banner strong { color: #5C3900; }
+    .dpb-icon { font-size: 1.3rem; flex-shrink: 0; margin-top: 1px; }
+
+    /* FADE */
+    .fade-in { animation: fadeUp .3s ease both; }
+    @keyframes fadeUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+    /* LOGIN */
+    #login-screen { min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 24px 20px; background: var(--cream); }
+    .login-box { background: var(--white); border: 1.5px solid var(--line); border-radius: var(--radius); padding: 44px 40px 40px; width: 100%; max-width: 400px; text-align: center; }
+    .login-box .login-logo { margin-bottom: 28px; }
+    .login-box h2 { font-family: 'Suez One', serif; font-size: 1.4rem; margin-bottom: 6px; }
+    .login-box .login-sub { font-size: 0.82rem; color: var(--ink-soft); margin-bottom: 28px; }
+    .login-field { text-align: left; margin-bottom: 16px; }
+    .login-field label { display: block; font-size: 0.72rem; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; color: var(--ink-soft); margin-bottom: 6px; }
+    .login-field input { width: 100%; padding: 11px 14px; border: 1.5px solid var(--line); border-radius: 6px; font-size: 0.92rem; font-family: 'Lato', sans-serif; background: var(--cream); color: var(--ink); transition: border-color .15s; }
+    .login-field input:focus { outline: none; border-color: var(--ink); background: var(--white); }
+    .btn-login { width: 100%; margin-top: 8px; background: var(--ink); color: var(--white); border: 2px solid var(--ink); padding: 13px; border-radius: 6px; font-size: 0.88rem; font-weight: 700; font-family: 'Lato', sans-serif; letter-spacing: 1.5px; text-transform: uppercase; cursor: pointer; transition: background .18s, color .18s; }
+    .btn-login:hover { background: var(--white); color: var(--ink); }
+    .btn-login:disabled { background: var(--line); border-color: var(--line); color: var(--white); cursor: not-allowed; }
+    .login-error { background: #FDECEA; border: 1px solid #E8998F; border-radius: 6px; padding: 10px 14px; font-size: 0.82rem; color: var(--err); margin-top: 14px; display: none; }
+
+    /* ── ADMIN SCREEN ── */
+    #admin-screen {
+      display: none;
+      flex-direction: column;
+      min-height: 100vh;
+    }
+    .admin-hero {
+      background: var(--ink);
+      color: var(--white);
+      padding: 40px 40px 36px;
+    }
+    .admin-hero-inner { max-width: 860px; margin: 0 auto; }
+    .admin-hero .eyebrow { font-size: 0.7rem; font-weight: 700; letter-spacing: 3px; text-transform: uppercase; color: rgba(255,255,255,0.4); margin-bottom: 10px; }
+    .admin-hero h1 { font-family: 'Suez One', serif; font-size: clamp(1.6rem, 3vw, 2.4rem); }
+    .admin-hero p { font-size: 0.88rem; color: rgba(255,255,255,0.55); margin-top: 8px; }
+
+    .admin-container { max-width: 860px; margin: 0 auto; padding: 32px 20px 80px; flex: 1; }
+
+    /* Tabs de sede dentro del admin */
+    .admin-sede-tabs { display: flex; gap: 0; border-bottom: 1.5px solid var(--line); margin-bottom: 24px; }
+    .admin-sede-tab { padding: 10px 28px 13px; border: none; border-bottom: 3px solid transparent; background: transparent; font-size: 0.88rem; font-weight: 700; font-family: 'Lato', sans-serif; cursor: pointer; color: var(--ink-soft); margin-bottom: -1.5px; transition: color .15s; letter-spacing: 0.3px; }
+    .admin-sede-tab:hover { color: var(--ink); }
+    .admin-sede-tab.active { color: var(--ink); border-bottom-color: var(--ink); }
+
+    .admin-panel { display: none; }
+    .admin-panel.active { display: block; }
+
+    /* Producto row con toggle */
+    .product-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 16px 0;
+      border-bottom: 1px solid var(--cream-dk);
+    }
+    .product-row:last-child { border-bottom: none; }
+    .product-row.inactive { opacity: 0.45; }
+    .product-info { display: flex; flex-direction: column; gap: 3px; }
+    .product-info .p-code { font-family: 'Courier New', monospace; font-size: 0.73rem; color: var(--ink-soft); }
+    .product-info .p-name { font-size: 0.92rem; font-weight: 700; color: var(--ink); }
+
+    /* Toggle switch */
+    .toggle-wrap { display: flex; align-items: center; gap: 10px; }
+    .toggle-label { font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: var(--ink-soft); min-width: 60px; text-align: right; }
+    .toggle-label.on { color: var(--ok); }
+    .toggle {
+      position: relative;
+      width: 46px; height: 26px;
+      cursor: pointer;
+      flex-shrink: 0;
+    }
+    .toggle input { opacity: 0; width: 0; height: 0; }
+    .toggle-slider {
+      position: absolute;
+      inset: 0;
+      background: var(--line);
+      border-radius: 26px;
+      transition: background .2s;
+    }
+    .toggle-slider::before {
+      content: '';
+      position: absolute;
+      width: 20px; height: 20px;
+      left: 3px; top: 3px;
+      background: white;
+      border-radius: 50%;
+      transition: transform .2s;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.2);
+    }
+    .toggle input:checked + .toggle-slider { background: var(--ok); }
+    .toggle input:checked + .toggle-slider::before { transform: translateX(20px); }
+
+    /* Botón guardar admin */
+    .admin-save-row { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 14px; margin-top: 28px; padding-top: 22px; border-top: 1.5px solid var(--line); }
+    .admin-save-note { font-size: 0.8rem; color: var(--ink-soft); line-height: 1.5; }
+    .btn-admin-save { background: var(--ink); color: white; border: 2px solid var(--ink); padding: 12px 36px; border-radius: 6px; font-size: 0.85rem; font-weight: 700; font-family: 'Lato', sans-serif; letter-spacing: 1.5px; text-transform: uppercase; cursor: pointer; transition: background .18s, color .18s; white-space: nowrap; }
+    .btn-admin-save:hover { background: var(--white); color: var(--ink); }
+    .btn-admin-save:disabled { background: var(--line); border-color: var(--line); cursor: not-allowed; }
+    .admin-save-ok { font-size: 0.82rem; color: var(--ok); font-weight: 700; display: none; }
+
+    /* RESPONSIVE */
+    @media (max-width: 600px) {
+      header { padding: 0 18px; }
+      .hero { padding: 38px 18px 30px; }
+      .card { padding: 22px 18px; }
+      .sede-grid { grid-template-columns: 1fr; }
+      .summary-grid { grid-template-columns: 1fr 1fr; }
+      .submit-row { flex-direction: column; align-items: stretch; }
+      .btn-confirm { width: 100%; text-align: center; }
+      footer { padding: 16px 18px; flex-direction: column; gap: 6px; text-align: center; }
+      .admin-hero { padding: 28px 18px 24px; }
+      .admin-container { padding: 24px 18px 60px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div id="login-screen">
+  <div class="login-box fade-in">
+    <div class="login-logo">
+      <svg width="200" height="72" viewBox="0 0 340 110" fill="none" xmlns="http://www.w3.org/2000/svg" aria-label="FEED">
+        <text x="0" y="78" font-family="'Arial Black', Impact, sans-serif" font-size="90" font-weight="900" fill="#1D1D1B" letter-spacing="-2">FEED</text>
+        <text x="318" y="20" font-family="Arial, sans-serif" font-size="18" fill="#1D1D1B">®</text>
+        <text x="2" y="100" font-family="Arial, sans-serif" font-size="11" font-weight="700" fill="#1D1D1B" letter-spacing="2.5">HAPPINESS IS HOMEMADE</text>
+      </svg>
+    </div>
+    <h2>Portal YPF</h2>
+    <p class="login-sub">Ingresá con tu usuario y contraseña</p>
+    <div class="login-field">
+      <label for="input-usuario">Usuario</label>
+      <input type="text" id="input-usuario" placeholder="Tu usuario" autocomplete="username" />
+    </div>
+    <div class="login-field">
+      <label for="input-clave">Contraseña</label>
+      <input type="password" id="input-clave" placeholder="••••••••" autocomplete="current-password" />
+    </div>
+    <button class="btn-login" id="btn-login" onclick="doLogin()">Ingresar</button>
+    <div class="login-error" id="login-error"></div>
+  </div>
+</div>
+
+<!-- ADMIN SCREEN -->
+<div id="admin-screen">
+  <header>
+    <svg width="160" height="58" viewBox="0 0 340 110" fill="none" xmlns="http://www.w3.org/2000/svg" aria-label="FEED">
+      <text x="0" y="78" font-family="'Arial Black', Impact, sans-serif" font-size="90" font-weight="900" fill="#1D1D1B" letter-spacing="-2">FEED</text>
+      <text x="318" y="20" font-family="Arial, sans-serif" font-size="18" fill="#1D1D1B">®</text>
+      <text x="2" y="100" font-family="Arial, sans-serif" font-size="11" font-weight="700" fill="#1D1D1B" letter-spacing="2.5">HAPPINESS IS HOMEMADE</text>
+    </svg>
+    <div class="header-tag">Panel de administración</div>
+  </header>
+
+  <div class="admin-hero">
+    <div class="admin-hero-inner">
+      <div class="eyebrow">Admin · YPF</div>
+      <h1>Catálogo de productos</h1>
+      <p>Activá o desactivá productos por sede. Los cambios se aplican a todos los usuarios de forma inmediata.</p>
+    </div>
+  </div>
+
+  <div class="admin-container">
+    <div class="card fade-in">
+      <div class="card-label">Sede</div>
+      <h2>Seleccioná la sede a configurar</h2>
+
+      <div class="admin-sede-tabs">
+        <button class="admin-sede-tab active" onclick="switchAdminTab('nordelta')">YPF Nordelta</button>
+        <button class="admin-sede-tab" onclick="switchAdminTab('madero')">YPF Madero</button>
+        <button class="admin-sede-tab" onclick="switchAdminTab('alcorta')">YPF Alcorta</button>        
+      </div>
+
+      <!-- Panel Nordelta -->
+      <div class="admin-panel active" id="admin-panel-nordelta">
+        <div id="product-list-nordelta"></div>
+        <div class="admin-save-row">
+          <p class="admin-save-note">Los cambios se aplican inmediatamente para todos los usuarios que ingresen.</p>
+          <div style="display:flex;align-items:center;gap:16px">
+            <span class="admin-save-ok" id="save-ok-nordelta">✓ Guardado</span>
+            <button class="btn-admin-save" onclick="guardarCatalogo('nordelta')">Guardar cambios</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Panel Alcorta -->
+      <div class="admin-panel active" id="admin-panel-alcorta">
+        <div id="product-list-alcorta"></div>
+        <div class="admin-save-row">
+          <p class="admin-save-note">Los cambios se aplican inmediatamente para todos los usuarios que ingresen.</p>
+          <div style="display:flex;align-items:center;gap:16px">
+            <span class="admin-save-ok" id="save-ok-alcorta">✓ Guardado</span>
+            <button class="btn-admin-save" onclick="guardarCatalogo('alcorta')">Guardar cambios</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Panel Madero -->
+      <div class="admin-panel" id="admin-panel-madero">
+        <div id="product-list-madero"></div>
+        <div class="admin-save-row">
+          <p class="admin-save-note">Los cambios se aplican inmediatamente para todos los usuarios que ingresen.</p>
+          <div style="display:flex;align-items:center;gap:16px">
+            <span class="admin-save-ok" id="save-ok-madero">✓ Guardado</span>
+            <button class="btn-admin-save" onclick="guardarCatalogo('madero')">Guardar cambios</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <footer>
+    <span>© FEED — Happiness is Homemade</span>
+    <span>Consultas: <a href="mailto:mariano@somosfeed.com.ar">mariano@somosfeed.com.ar</a></span>
+  </footer>
+</div>
+
+<!-- APP NORMAL -->
+<div id="main-app" style="display:none; flex-direction:column; min-height:100vh;">
+
+<header>
+  <svg width="220" height="80" viewBox="0 0 340 110" fill="none" xmlns="http://www.w3.org/2000/svg" aria-label="FEED">
+    <text x="0" y="78" font-family="'Arial Black', Impact, sans-serif" font-size="90" font-weight="900" fill="#1D1D1B" letter-spacing="-2">FEED</text>
+    <text x="318" y="20" font-family="Arial, sans-serif" font-size="18" fill="#1D1D1B">®</text>
+    <text x="2" y="100" font-family="Arial, sans-serif" font-size="11" font-weight="700" fill="#1D1D1B" letter-spacing="2.5">HAPPINESS IS HOMEMADE</text>
+  </svg>
+  <div class="header-tag">Portal de pedidos · YPF</div>
+</header>
+
+<div class="hero">
+  <div class="hero-inner">
+    <div class="hero-eyebrow">YPF × FEED — Pedido semanal</div>
+    <h1>Hacé tu pedido<br>para la próxima semana</h1>
+    <p>Seleccioná una sede, completá el pedido por día y confirmalo. Los pedidos se pueden hacer hasta las 15hs de cada Lunes.</p>
+    <div class="week-pill" id="week-range">Cargando semana…</div>
+  </div>
+</div>
+
+<div class="container" id="app-container">
+  <div id="pedido-realizado-banner" style="display:none" class="pedido-realizado-banner fade-in">
+    <span class="prb-icon">✅</span>
+    <span id="pedido-realizado-texto"></span>
+  </div>
+
+  <div class="card fade-in" id="step-sede">
+    <div class="card-label"> </div>
+    <h2>Seleccioná la sede y cargá el pedido</h2>
+    <div class="sede-grid" id="sede-grid">
+      <div class="sede-card" id="card-nordelta" onclick="startOrder('nordelta')">
+        <div class="sede-check">✓</div>
+        <div class="sede-name">YPF Nordelta</div>
+        <div class="pedido-chip">✓ &nbsp;Pedido realizado</div>
+        <div class="sede-cta sede-cta-nuevo">Cargar pedido <span>→</span></div>
+        <div class="sede-cta-editar">✎ &nbsp;Editar pedido</div>
+      </div>
+      <div class="sede-card" id="card-madero" onclick="startOrder('madero')">
+        <div class="sede-check">✓</div>
+        <div class="sede-name">YPF Madero</div>
+        <div class="pedido-chip">✓ &nbsp;Pedido realizado</div>
+        <div class="sede-cta sede-cta-nuevo">Cargar pedido <span>→</span></div>
+        <div class="sede-cta-editar">✎ &nbsp;Editar pedido</div>
+      </div>
+      <div class="sede-card" id="card-alcorta" onclick="startOrder('alcorta')">
+        <div class="sede-check">✓</div>
+        <div class="sede-name">YPF Figueroa Alcorta</div>
+        <div class="pedido-chip">✓ &nbsp;Pedido realizado</div>
+        <div class="sede-cta sede-cta-nuevo">Cargar pedido <span>→</span></div>
+        <div class="sede-cta-editar">✎ &nbsp;Editar pedido</div>
+      </div>
+    </div>
+  </div>
+
+  <div id="order-section" style="display:none">
+    <div class="card fade-in">
+      <div class="order-sede-label">
+        <span class="card-label" style="margin-bottom:0">Pedido —</span>
+        <span id="order-sede-title" style="font-family:'Suez One',serif; font-size:1.05rem;"></span>
+      </div>
+      <div style="height:18px"></div>
+      <div class="edit-strip" id="edit-strip">
+        <span class="di">✎</span>
+        <span>Estás <strong>editando</strong> un pedido ya enviado. Al confirmar se enviará un nuevo aviso al equipo de planificación.</span>
+      </div>
+      <div class="deadline-strip">
+        <span class="di">⏰</span>
+        <span>Recordá confirmar antes del <strong>lunes a las 15:00&nbsp;hs</strong>. Pasado ese horario no se aceptan modificaciones.</span>
+      </div>
+      <div class="day-tabs" id="day-tabs"></div>
+      <div id="day-panels"></div>
+    </div>
+    <div class="card fade-in">
+      <div class="card-label">Resumen</div>
+      <h2 id="summary-title" style="margin-bottom:18px">—</h2>
+      <div class="summary-grid" id="summary-grid"></div>
+      <div class="divider"></div>
+      <div class="submit-row">
+        <p class="submit-note">Al confirmar, el pedido queda registrado y el equipo de planificación recibe una notificación.</p>
+        <button class="btn-confirm" id="btn-submit" onclick="submitOrder()">Confirmar pedido</button>
+      </div>
+      <div class="err-strip" id="error-msg"></div>
+    </div>
+  </div>
+</div>
+
+<div id="success-screen">
+  <div class="success-icon">✓</div>
+  <h2 id="success-title">¡Pedido confirmado!</h2>
+  <div class="success-sede" id="success-sede-label">—</div>
+  <p id="success-msg">El pedido fue registrado correctamente. Nuestro equipo ya recibió la notificación y lo está procesando.</p>
+  <button class="btn-back" onclick="backToHome()">Volver al inicio</button>
+</div>
+
+<footer>
+  <span>© FEED — Happiness is Homemade</span>
+  <span>Consultas: <a href="mailto:mariano@somosfeed.com.ar">mariano@somosfeed.com.ar</a></span>
+</footer>
+</div><!-- /main-app -->
+
+<script>
+// ════════════════════════════════════════════════
+// CONFIGURACIÓN
+// ════════════════════════════════════════════════
+const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwVH28bhyVnnN9vIX_a87kAx_JasSAr7MSebqTVV6xgIq6I-HdxAKuW5ivWLsQ7MkWaPQ/exec';
+
+const PRODUCTS = [
+  { code: 'PFEN00001', name: 'Ensalada Caesar', categoria: 'Ensalada' },
+  { code: 'PFEN00010', name: 'Ensalada Peras y queso azul', categoria: 'Ensalada' },
+  { code: 'PFEN00005', name: 'Ensalada Tuna', categoria: 'Ensalada'},
+  { code: 'PFPW00239', name: 'Chicken pesto bowl', categoria: 'Bowl'},
+  { code: 'PFPW00238', name: 'Cob bowl', categoria: 'Bowl'},
+  { code: 'PFPW00274', name: 'Risotto de hongos', categoria: 'Platos'},
+  { code: 'PFPW00273', name: 'Ñoquis de boniato con ragu', categoria: 'Platos'},
+  { code: 'PFPW00270', name: 'Orecchiette con crema de limon, brocoli y zucchini', categoria: 'Platos'},
+  { code: 'PFPW00272', name: 'Sopa de boniato', categoria: 'Sopa'},
+  { code: 'PFPW00271', name: 'Sopa de choclo', categoria: 'Sopa'}  
+];
+
+const SEDE_DAYS = { nordelta: [1,3,5,0], madero: [1,2,3,4,5], alcorta: [1,3,5,0] };
+const SEDE_LABELS = { nordelta: 'YPF Nordelta', madero: 'YPF Madero', alcorta: "YPF Alcorta" };
+const DAY_NAMES = ['Domingo','Lunes','Martes','Miércoles','Jueves','Viernes','Sábado'];
+const DAY_SHORT = ['Dom','Lun','Mar','Mié','Jue','Vie','Sáb'];
+
+// ── USUARIOS ──
+const USUARIOS_HASH = {
+  'ypfnordelta': '811e0aff9691ead263abb1cf4a5643385da2493b9ed2290efbb4dc30aff8faac',
+  'ypfmadero':   'ca78688ce87f65814690b26a33a0b28f974d88273455754693db228d3c4bc32e',
+  'feedpruebas': '5974e0ddef1da67abe94e2a7505230e57e3b23f1d16c5542630dddd670151877',
+  'admin':       '3ca4beea159b96d5d04c5e723f682c32672521bc9344920bbbb23023afc46e62',
+  'ypfalcorta':   'ff5ef73e6dabce4ecda61f4479ec546e2524cf071e72c550523225ea9b3b98c1'
+};
+const SALT = 'feed_salt_2025';
+
+// ── SEDES PERMITIDAS POR USUARIO ──
+// Si el usuario no está en este mapa, puede ver todas las sedes.
+const USUARIO_SEDES = {
+  'ypfnordelta': ['nordelta'],
+  'ypfmadero':   ['madero'],
+  'ypfalcorta':   ['alcorta']
+};
+
+function getSedesPermitidas() {
+  return USUARIO_SEDES[sessionUsuario] || ['nordelta', 'madero','alcorta'];
+}
+
+// ── ESTADO ──
+let currentSede   = null;
+let orderData     = {};
+let deliveryDates = [];
+let isEditing     = false;
+let sessionUsuario   = sessionStorage.getItem('feed_usuario') || null;
+let sessionHashClave = sessionStorage.getItem('feed_hash')    || null;
+
+// Catálogo activo por sede (cargado desde servidor)
+let catalogoActivo = { nordelta: null, madero: null, alcorta: null };
+// Estado toggles en el admin (antes de guardar)
+let adminToggles = { nordelta: {}, madero: {}, alcorta: {} };
+
+// ════════════════════════════════════════════════
+// LOGIN
+// ════════════════════════════════════════════════
+async function doLogin() {
+  const usuario = document.getElementById('input-usuario').value.trim();
+  const clave   = document.getElementById('input-clave').value;
+  const errEl   = document.getElementById('login-error');
+
+  if (!usuario || !clave) { errEl.textContent = 'Completá usuario y contraseña.'; errEl.style.display = 'block'; return; }
+  errEl.style.display = 'none';
+
+  const encoder = new TextEncoder();
+  const data    = encoder.encode(usuario + ':' + clave + ':' + SALT);
+  const hashBuf = await crypto.subtle.digest('SHA-256', data);
+  const hashHex = Array.from(new Uint8Array(hashBuf)).map(b => b.toString(16).padStart(2,'0')).join('');
+
+  if (USUARIOS_HASH[usuario] && USUARIOS_HASH[usuario] === hashHex) {
+    sessionUsuario   = usuario;
+    sessionHashClave = hashHex;
+    sessionStorage.setItem('feed_usuario', usuario);
+    sessionStorage.setItem('feed_hash',    hashHex);
+    if (usuario === 'admin') {
+      showAdmin();
+    } else {
+      showApp();
+    }
+  } else {
+    errEl.textContent = 'Usuario o contraseña incorrectos.';
+    errEl.style.display = 'block';
+  }
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  ['input-usuario','input-clave'].forEach(id => {
+    document.getElementById(id).addEventListener('keydown', e => { if (e.key === 'Enter') doLogin(); });
+  });
+  if (sessionUsuario && sessionHashClave && USUARIOS_HASH[sessionUsuario] === sessionHashClave) {
+    if (sessionUsuario === 'admin') showAdmin(); else showApp();
+  }
+});
+
+// ════════════════════════════════════════════════
+// ADMIN
+// ════════════════════════════════════════════════
+async function showAdmin() {
+  document.getElementById('login-screen').style.display = 'none';
+  document.getElementById('admin-screen').style.display = 'flex';
+
+  // Cargar catálogos actuales del servidor para ambas sedes
+  await Promise.all(['nordelta','madero', 'alcorta'].map(async sede => {
+    try {
+      const url = APPS_SCRIPT_URL + '?action=getCatalogo&sede=' + encodeURIComponent(SEDE_LABELS[sede]);
+      const res  = await fetch(url);
+      const json = await res.json();
+      catalogoActivo[sede] = json.catalogo || PRODUCTS.map(p => p.code);
+    } catch(e) {
+      catalogoActivo[sede] = PRODUCTS.map(p => p.code);
+    }
+    adminToggles[sede] = {};
+    PRODUCTS.forEach(p => {
+      adminToggles[sede][p.code] = catalogoActivo[sede].includes(p.code);
+    });
+  }));
+
+  renderAdminPanel('nordelta');
+  renderAdminPanel('madero');
+  renderAdminPanel('alcorta');
+}
+
+function renderAdminPanel(sede) {
+  const container = document.getElementById('product-list-' + sede);
+  container.innerHTML = '';
+  PRODUCTS.forEach(p => {
+    const activo = adminToggles[sede][p.code] !== false;
+    const row = document.createElement('div');
+    row.className = 'product-row' + (activo ? '' : ' inactive');
+    row.id = 'prow-' + sede + '-' + p.code;
+    row.innerHTML = `
+      <div class="product-info">
+        <span class="cat-chip cat-${p.categoria}" style="margin-bottom:4px">${p.code}</span>
+        <span class="p-name">${p.name}</span>
+        <span style="font-size:0.72rem;color:var(--ink-soft);margin-top:2px">${p.categoria}</span>
+      </div>
+      <div class="toggle-wrap">
+        <span class="toggle-label ${activo ? 'on' : ''}" id="tlabel-${sede}-${p.code}">${activo ? 'Activo' : 'Inactivo'}</span>
+        <label class="toggle">
+          <input type="checkbox" id="toggle-${sede}-${p.code}" ${activo ? 'checked' : ''}
+            onchange="onToggle('${sede}','${p.code}',this.checked)" />
+          <span class="toggle-slider"></span>
+        </label>
+      </div>`;
+    container.appendChild(row);
+  });
+}
+
+function onToggle(sede, code, checked) {
+  adminToggles[sede][code] = checked;
+  const row   = document.getElementById('prow-' + sede + '-' + code);
+  const label = document.getElementById('tlabel-' + sede + '-' + code);
+  row.classList.toggle('inactive', !checked);
+  label.textContent = checked ? 'Activo' : 'Inactivo';
+  label.classList.toggle('on', checked);
+  document.getElementById('save-ok-' + sede).style.display = 'none';
+}
+
+async function guardarCatalogo(sede) {
+  const btn = document.querySelector(`#admin-panel-${sede} .btn-admin-save`);
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span>Guardando…';
+
+  const activeCodes = PRODUCTS.filter(p => adminToggles[sede][p.code]).map(p => p.code);
+
+  try {
+    await fetch(APPS_SCRIPT_URL, {
+      method: 'POST',
+      mode: 'no-cors',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'setCatalogo', sede: SEDE_LABELS[sede], catalogo: activeCodes }),
+    });
+    catalogoActivo[sede] = activeCodes;
+    document.getElementById('save-ok-' + sede).style.display = 'inline';
+  } catch(e) {
+    alert('Error al guardar. Intentá nuevamente.');
+  }
+
+  btn.disabled = false;
+  btn.textContent = 'Guardar cambios';
+}
+
+function switchAdminTab(sede) {
+  document.querySelectorAll('.admin-sede-tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.admin-panel').forEach(p => p.classList.remove('active'));
+  document.querySelector(`.admin-sede-tab[onclick*="${sede}"]`).classList.add('active');
+  document.getElementById('admin-panel-' + sede).classList.add('active');
+}
+
+// ════════════════════════════════════════════════
+// APP NORMAL
+// ════════════════════════════════════════════════
+function showApp() {
+  document.getElementById('login-screen').style.display = 'none';
+  document.getElementById('main-app').style.display     = 'flex';
+  init();
+
+  // Mostrar solo las sedes permitidas para este usuario
+  const permitidas = getSedesPermitidas();
+  ['nordelta', 'madero', 'alcorta'].forEach(s => {
+    document.getElementById('card-' + s).style.display = permitidas.includes(s) ? '' : 'none';
+  });
+  // Si solo hay una sede visible, usar layout de una columna
+  const grid = document.getElementById('sede-grid');
+  grid.classList.toggle('single-sede', permitidas.length === 1);
+
+  cargarEstadoDesdeServidor();
+}
+
+// ════════════════════════════════════════════════
+// INIT
+// ════════════════════════════════════════════════
+function init() {
+  const now  = new Date();
+  const ar   = new Date(now.toLocaleString('en-US', { timeZone: 'America/Argentina/Buenos_Aires' }));
+  const dow  = ar.getDay();
+  const hour = ar.getHours();
+  const deadlinePassed = (dow === 1 && hour >= 15);
+  let daysToThisMonday = (dow === 1) ? 0 : (8 - dow) % 7;
+  const daysToTargetMonday = daysToThisMonday + 7 + (deadlinePassed ? 7 : 0);
+  const mon = new Date(ar);
+  mon.setHours(0,0,0,0);
+  mon.setDate(ar.getDate() + daysToTargetMonday);
+  const sun = new Date(mon);
+  sun.setDate(mon.getDate() + 6);
+  window._weekMonday = mon;
+  document.getElementById('week-range').textContent = 'Semana del ' + fmtDate(mon) + ' al ' + fmtDate(sun);
+  if (deadlinePassed) showDeadlineBanner();
+}
+
+function showDeadlineBanner() {
+  const sedeCard = document.getElementById('step-sede');
+  if (document.querySelector('.deadline-passed-banner')) return;
+  const banner = document.createElement('div');
+  banner.className = 'deadline-passed-banner fade-in';
+  banner.innerHTML = `<span class="dpb-icon">🔒</span><div><strong>El plazo de este lunes cerró a las 15:00 hs.</strong><br>Ya podés cargar el pedido para la semana siguiente.</div>`;
+  sedeCard.parentNode.insertBefore(banner, sedeCard);
+}
+
+function fmtDate(d) { return d.toLocaleDateString('es-AR', { day: 'numeric', month: 'long' }); }
+function isoDate(d) { return d.toISOString().split('T')[0]; }
+
+// ════════════════════════════════════════════════
+// ESTADO DESDE SERVIDOR (pedidos + catálogo activo)
+// ════════════════════════════════════════════════
+let pedidosServidor = { nordelta: null, madero: null, alcorta: null };
+
+async function cargarEstadoDesdeServidor() {
+  // Solo cargar las sedes a las que el usuario tiene acceso
+  const permitidas = getSedesPermitidas();
+
+  await Promise.all(permitidas.map(async sede => {
+    try {
+      const allowedDows = SEDE_DAYS[sede];
+      const fechas = [];
+      for (let i = 0; i < 7; i++) {
+        const d = new Date(window._weekMonday);
+        d.setDate(window._weekMonday.getDate() + i);
+        if (allowedDows.includes(d.getDay())) fechas.push(isoDate(d));
+      }
+      const url = APPS_SCRIPT_URL
+        + '?usuario=' + encodeURIComponent(sessionUsuario)
+        + '&sede='    + encodeURIComponent(SEDE_LABELS[sede])
+        + '&fechas='  + encodeURIComponent(fechas.join(','));
+      const res  = await fetch(url);
+      const json = await res.json();
+      if (json.status === 'ok' && json.pedido) pedidosServidor[sede] = json.pedido;
+      catalogoActivo[sede] = json.catalogo || PRODUCTS.map(p => p.code);
+    } catch(e) {
+      catalogoActivo[sede] = PRODUCTS.map(p => p.code);
+    }
+  }));
+
+  actualizarBannerYCards();
+}
+
+// ════════════════════════════════════════════════
+// BANNER Y CARDS
+// ════════════════════════════════════════════════
+function actualizarBannerYCards() {
+  const banner = document.getElementById('pedido-realizado-banner');
+  const texto  = document.getElementById('pedido-realizado-texto');
+  const permitidas = getSedesPermitidas();
+  const pedidos = Object.entries(pedidosServidor)
+    .filter(([sede, v]) => v !== null && permitidas.includes(sede))
+    .map(([sede, v]) => ({ sede, fecha: v.fecha }));
+  if (pedidos.length === 0) {
+    banner.style.display = 'none';
+  } else {
+    const lineas = pedidos.map(p => `<strong>${SEDE_LABELS[p.sede]}</strong> el ${p.fecha}`).join(' · ');
+    texto.innerHTML = pedidos.length === 1 ? `Ya hay un pedido realizado: ${lineas}` : `Ya hay pedidos realizados: ${lineas}`;
+    banner.style.display = 'flex';
+  }
+  // Solo actualizar las cards visibles
+  permitidas.forEach(s => {
+    document.getElementById('card-' + s).classList.toggle('has-pedido', pedidosServidor[s] !== null);
+  });
+}
+
+// ════════════════════════════════════════════════
+// INICIAR PEDIDO
+// ════════════════════════════════════════════════
+function startOrder(sede) {
+  currentSede   = sede;
+  orderData     = {};
+  deliveryDates = [];
+  isEditing     = pedidosServidor[sede] !== null;
+
+  document.getElementById('order-section').style.display = 'block';
+  document.getElementById('order-sede-title').textContent = SEDE_LABELS[sede];
+  document.getElementById('summary-title').textContent    = SEDE_LABELS[sede];
+  document.getElementById('edit-strip').classList.toggle('visible', isEditing);
+  document.getElementById('btn-submit').textContent = isEditing ? 'Confirmar cambios' : 'Confirmar pedido';
+
+  buildDayUI();
+  hideError();
+  document.getElementById('order-section').scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+// Devuelve solo los productos activos para la sede actual
+function getActiveProducts() {
+  const activos = catalogoActivo[currentSede] || PRODUCTS.map(p => p.code);
+  return PRODUCTS.filter(p => activos.includes(p.code));
+}
+
+// ════════════════════════════════════════════════
+// BUILD DAY UI
+// ════════════════════════════════════════════════
+function buildDayUI() {
+  const monday      = window._weekMonday;
+  const allowedDows = SEDE_DAYS[currentSede];
+  const activeProds = getActiveProducts();
+
+  for (let i = 0; i < 7; i++) {
+    const d = new Date(monday);
+    d.setDate(monday.getDate() + i);
+    if (allowedDows.includes(d.getDay())) {
+      deliveryDates.push(d);
+      orderData[isoDate(d)] = {};
+      activeProds.forEach(p => { orderData[isoDate(d)][p.code] = 0; });
+    }
+  }
+
+  const tabsEl   = document.getElementById('day-tabs');
+  const panelsEl = document.getElementById('day-panels');
+  tabsEl.innerHTML   = '';
+  panelsEl.innerHTML = '';
+
+  deliveryDates.forEach((d, idx) => {
+    const iso = isoDate(d);
+    const dow = d.getDay();
+
+    const tab = document.createElement('button');
+    tab.className = 'day-tab' + (idx === 0 ? ' active' : '');
+    tab.id = 'tab-' + iso;
+    tab.innerHTML = DAY_SHORT[dow] + ' ' + d.getDate() + ' <span class="dot" id="dot-' + iso + '"></span>';
+    tab.onclick = () => switchDay(iso);
+    tabsEl.appendChild(tab);
+
+    const panel = document.createElement('div');
+    panel.className = 'day-panel' + (idx === 0 ? ' active' : '');
+    panel.id = 'panel-' + iso;
+
+    const rows = activeProds.map(p => `
+      <tr>
+        <td class="code">
+          <span class="cat-chip cat-${p.categoria}">${p.code}</span>
+        </td>
+        <td>${p.name}</td>
+        <td>
+          <div class="qty-wrap">
+            <button class="qty-btn" onclick="changeQty('${iso}','${p.code}',-1)">−</button>
+            <input class="qty-input" type="number" min="0" value="0"
+              id="qty-${iso}-${p.code}"
+              oninput="setQty('${iso}','${p.code}',this.value)"
+              onchange="setQty('${iso}','${p.code}',this.value)" />
+            <button class="qty-btn" onclick="changeQty('${iso}','${p.code}',1)">+</button>
+          </div>
+        </td>
+      </tr>`).join('');
+
+    panel.innerHTML = `
+      <div class="day-header">
+        <h3>${DAY_NAMES[dow]}</h3>
+        <span class="date-str">${d.toLocaleDateString('es-AR',{day:'numeric',month:'long',year:'numeric'})}</span>
+      </div>
+      <table class="ptable">
+        <thead><tr><th>Código</th><th>Producto</th><th>Cantidad</th></tr></thead>
+        <tbody>${rows}</tbody>
+      </table>`;
+    panelsEl.appendChild(panel);
+  });
+
+  updateSummary();
+
+  if (isEditing && pedidosServidor[currentSede] && pedidosServidor[currentSede].dias) {
+    pedidosServidor[currentSede].dias.forEach(dia => {
+      dia.productos.forEach(prod => {
+        if (prod.cantidad > 0) {
+          const input = document.getElementById('qty-' + dia.fecha + '-' + prod.codigo);
+          if (input) { input.value = prod.cantidad; if (orderData[dia.fecha]) orderData[dia.fecha][prod.codigo] = prod.cantidad; }
+          refreshDot(dia.fecha);
+        }
+      });
+    });
+    updateSummary();
+  }
+}
+
+function switchDay(iso) {
+  document.querySelectorAll('.day-tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.day-panel').forEach(p => p.classList.remove('active'));
+  document.getElementById('tab-' + iso).classList.add('active');
+  document.getElementById('panel-' + iso).classList.add('active');
+}
+
+// ════════════════════════════════════════════════
+// CANTIDADES
+// ════════════════════════════════════════════════
+function changeQty(iso, code, delta) {
+  const next = Math.max(0, (orderData[iso][code] || 0) + delta);
+  orderData[iso][code] = next;
+  document.getElementById('qty-' + iso + '-' + code).value = next;
+  refreshDot(iso); updateSummary();
+}
+function setQty(iso, code, val) {
+  const n = Math.max(0, parseInt(val) || 0);
+  orderData[iso][code] = n;
+  document.getElementById('qty-' + iso + '-' + code).value = n;
+  refreshDot(iso); updateSummary();
+}
+function refreshDot(iso) {
+  const has = Object.values(orderData[iso] || {}).some(q => q > 0);
+  const dot = document.getElementById('dot-' + iso);
+  if (dot) dot.classList.toggle('visible', has);
+}
+
+// ════════════════════════════════════════════════
+// RESUMEN
+// ════════════════════════════════════════════════
+function updateSummary() {
+  const grid = document.getElementById('summary-grid');
+  if (!grid) return;
+  grid.innerHTML = '';
+  const activeProds = getActiveProducts();
+  deliveryDates.forEach(d => {
+    const iso = isoDate(d);
+    const dow = d.getDay();
+    const has = Object.values(orderData[iso] || {}).some(q => q > 0);
+    const div = document.createElement('div');
+    div.className = 's-day';
+    let html = '<div class="s-day-name">' + DAY_SHORT[dow] + ' ' + d.getDate() + '</div>';
+    if (!has) { html += '<div class="s-empty">Sin pedido</div>'; }
+    else { activeProds.forEach(p => { if ((orderData[iso] || {})[p.code] > 0) html += '<div class="s-item">× ' + orderData[iso][p.code] + ' ' + p.name + '</div>'; }); }
+    div.innerHTML = html;
+    grid.appendChild(div);
+  });
+}
+
+// ════════════════════════════════════════════════
+// SUBMIT
+// ════════════════════════════════════════════════
+async function submitOrder() {
+  const total = deliveryDates.reduce((sum, d) => sum + Object.values(orderData[isoDate(d)] || {}).reduce((s,q) => s+q, 0), 0);
+  if (total === 0) { showError('El pedido está vacío. Ingresá al menos un producto antes de confirmar.'); return; }
+
+  const btn = document.getElementById('btn-submit');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span>Enviando…';
+  hideError();
+
+  const payload = {
+    action: 'pedido',
+    usuario: sessionUsuario,
+    esEdicion: isEditing,
+    sede: SEDE_LABELS[currentSede],
+    semana: document.getElementById('week-range').textContent,
+    timestamp: new Date().toISOString(),
+    dias: deliveryDates.map(d => ({
+      fecha: isoDate(d),
+      dia: DAY_NAMES[d.getDay()],
+      productos: getActiveProducts()
+        .map(p => ({ codigo: p.code, nombre: p.name, cantidad: (orderData[isoDate(d)] || {})[p.code] || 0 }))
+        .filter(p => p.cantidad > 0),
+    })).filter(d => d.productos.length > 0),
+  };
+
+  try {
+    await fetch(APPS_SCRIPT_URL, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+    onOrderSuccess();
+  } catch (err) {
+    showError('Hubo un error al enviar el pedido. Intentá nuevamente o escribinos a mariano@somosfeed.com.ar');
+    btn.disabled = false;
+    btn.innerHTML = isEditing ? 'Confirmar cambios' : 'Confirmar pedido';
+  }
+}
+
+// ════════════════════════════════════════════════
+// ÉXITO
+// ════════════════════════════════════════════════
+function onOrderSuccess() {
+  const fechaHoy = new Date().toLocaleDateString('es-AR', { day:'2-digit', month:'2-digit', year:'numeric', timeZone:'America/Argentina/Buenos_Aires' });
+  pedidosServidor[currentSede] = {
+    fecha: fechaHoy,
+    dias: deliveryDates.map(d => ({
+      fecha: isoDate(d), dia: DAY_NAMES[d.getDay()],
+      productos: getActiveProducts().map(p => ({ codigo: p.code, nombre: p.name, cantidad: (orderData[isoDate(d)] || {})[p.code] || 0 })).filter(p => p.cantidad > 0),
+    })).filter(d => d.productos.length > 0),
+  };
+  document.getElementById('success-title').textContent = isEditing ? '¡Pedido actualizado!' : '¡Pedido confirmado!';
+  document.getElementById('success-msg').textContent   = isEditing ? 'Los cambios fueron registrados. El equipo de planificación recibió un aviso con el pedido actualizado.' : 'El pedido fue registrado correctamente. Nuestro equipo ya recibió la notificación y lo está procesando.';
+  document.getElementById('app-container').style.display  = 'none';
+  document.getElementById('success-screen').style.display = 'block';
+  document.getElementById('success-sede-label').textContent = SEDE_LABELS[currentSede];
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+// ════════════════════════════════════════════════
+// VOLVER AL INICIO
+// ════════════════════════════════════════════════
+function backToHome() {
+  document.getElementById('success-screen').style.display = 'none';
+  document.getElementById('app-container').style.display  = 'block';
+  document.getElementById('order-section').style.display  = 'none';
+  currentSede = null; orderData = {}; deliveryDates = []; isEditing = false;
+  const btn = document.getElementById('btn-submit');
+  btn.disabled = false; btn.textContent = 'Confirmar pedido';
+  actualizarBannerYCards();
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function showError(msg) { const el = document.getElementById('error-msg'); el.textContent = msg; el.style.display = 'block'; }
+function hideError()    { document.getElementById('error-msg').style.display = 'none'; }
+
+init();
+</script>
+</body>
+</html>
