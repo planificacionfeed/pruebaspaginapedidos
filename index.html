@@ -48,6 +48,16 @@
     .card-label { font-size: 0.67rem; font-weight: 700; letter-spacing: 3px; text-transform: uppercase; color: var(--accent2); margin-bottom: 6px; }
     .card h2 { font-family: 'Suez One', serif; font-size: 1.4rem; color: var(--ink); margin-bottom: 22px; line-height: 1.2; }
 
+    /* MODO SELECTOR (pedido / merma) */
+    .modo-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+    .modo-card { border: 1.5px solid var(--line); border-radius: var(--radius); padding: 26px 24px; cursor: pointer; transition: border-color .18s, background .18s, transform .15s; background: var(--cream); }
+    .modo-card:hover { border-color: var(--ink); background: var(--cream-dk); transform: translateY(-1px); }
+    .modo-card .modo-icon { font-size: 1.8rem; margin-bottom: 10px; }
+    .modo-card .modo-name { font-family: 'Suez One', serif; font-size: 1.15rem; margin-bottom: 5px; }
+    .modo-card .modo-desc { font-size: 0.8rem; color: var(--ink-soft); line-height: 1.45; }
+    .btn-volver-modo { background: transparent; border: none; color: var(--ink-soft); font-size: 0.8rem; font-weight: 700; letter-spacing: 0.5px; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; margin-bottom: 18px; padding: 4px 0; }
+    .btn-volver-modo:hover { color: var(--ink); }
+
     /* SEDE SELECTOR */
     .sede-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
     .sede-grid.single-sede { grid-template-columns: 1fr; max-width: 380px; }
@@ -68,8 +78,16 @@
     .sede-card.has-pedido .sede-cta-editar { display: flex; align-items: center; gap: 6px; margin-top: 14px; font-size: 0.78rem; font-weight: 700; color: var(--ok); letter-spacing: 0.5px; text-transform: uppercase; transition: gap .15s; }
     .sede-card.has-pedido:hover .sede-cta-editar { gap: 10px; }
 
+    /* SEMANA SELECTOR (merma) */
+    .semana-grid { display: flex; flex-direction: column; gap: 10px; }
+    .semana-card { border: 1.5px solid var(--line); border-radius: var(--radius); padding: 16px 20px; cursor: pointer; transition: border-color .18s, background .18s; background: var(--cream); display: flex; align-items: center; justify-content: space-between; }
+    .semana-card:hover { border-color: var(--accent2); background: var(--cream-dk); }
+    .semana-card .semana-label { font-weight: 700; font-size: 0.92rem; }
+    .semana-card .semana-arrow { color: var(--ink-soft); font-size: 1.1rem; }
+    .semana-empty { font-size: 0.85rem; color: var(--ink-soft); padding: 10px 0; }
+
     /* ORDER SECTION */
-    #order-section { display: none; }
+    #order-section, #merma-section { display: none; }
     .order-sede-label { display: flex; align-items: center; gap: 12px; margin-bottom: 6px; }
     .deadline-strip { background: var(--warn-bg); border: 1px solid var(--warn-br); border-radius: 8px; padding: 11px 16px; display: flex; align-items: flex-start; gap: 10px; font-size: 0.83rem; color: #6B4E00; margin-bottom: 22px; line-height: 1.5; }
     .deadline-strip .di { flex-shrink: 0; margin-top: 1px; }
@@ -102,9 +120,7 @@
     table.ptable tr:hover td { background: var(--cream); }
     table.ptable td.code { font-family: 'Courier New', monospace; font-size: 0.75rem; color: var(--ink-soft); }
     table.ptable td:last-child { text-align: center; }
-    .p-conservacion { display: block; font-size: 0.74rem; color: var(--ink-soft); font-weight: 400; margin-top: 3px; }
-    .p-conservacion.frio      { color: #2E6B8B; }
-    .p-conservacion.congelado { color: #5B4B8B; }
+    table.ptable td.cant-pedida { text-align: center; font-weight: 700; color: var(--ink-soft); }
 
     /* ── CATEGORY CHIPS ── */
     .cat-chip {
@@ -129,6 +145,8 @@
     .qty-input { width: 48px; height: 34px; text-align: center; border: none; border-left: 1px solid var(--line); border-right: 1px solid var(--line); font-size: 0.92rem; font-family: 'Lato', sans-serif; font-weight: 700; background: var(--white); color: var(--ink); -moz-appearance: textfield; }
     .qty-input::-webkit-inner-spin-button, .qty-input::-webkit-outer-spin-button { -webkit-appearance: none; }
     .qty-input:focus { outline: none; background: #FFFEF8; }
+    .qty-wrap.merma-qty .qty-btn { background: #FDF6E3; }
+    .qty-wrap.merma-qty .qty-input:focus { background: #FFFCF2; }
 
     /* RESUMEN */
     .summary-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(155px, 1fr)); gap: 10px; margin-bottom: 26px; }
@@ -210,7 +228,7 @@
     .admin-container { max-width: 860px; margin: 0 auto; padding: 32px 20px 80px; flex: 1; }
 
     /* Tabs de sede dentro del admin */
-    .admin-sede-tabs { display: flex; gap: 0; border-bottom: 1.5px solid var(--line); margin-bottom: 24px; }
+    .admin-sede-tabs { display: flex; gap: 0; border-bottom: 1.5px solid var(--line); margin-bottom: 24px; flex-wrap: wrap; }
     .admin-sede-tab { padding: 10px 28px 13px; border: none; border-bottom: 3px solid transparent; background: transparent; font-size: 0.88rem; font-weight: 700; font-family: 'Lato', sans-serif; cursor: pointer; color: var(--ink-soft); margin-bottom: -1.5px; transition: color .15s; letter-spacing: 0.3px; }
     .admin-sede-tab:hover { color: var(--ink); }
     .admin-sede-tab.active { color: var(--ink); border-bottom-color: var(--ink); }
@@ -276,7 +294,7 @@
       header { padding: 0 18px; }
       .hero { padding: 38px 18px 30px; }
       .card { padding: 22px 18px; }
-      .sede-grid { grid-template-columns: 1fr; }
+      .sede-grid, .modo-grid { grid-template-columns: 1fr; }
       .summary-grid { grid-template-columns: 1fr 1fr; }
       .submit-row { flex-direction: column; align-items: stretch; }
       .btn-confirm { width: 100%; text-align: center; }
@@ -340,7 +358,8 @@
       <div class="admin-sede-tabs">
         <button class="admin-sede-tab active" onclick="switchAdminTab('nordelta')">YPF Nordelta</button>
         <button class="admin-sede-tab" onclick="switchAdminTab('madero')">YPF Madero</button>
-        <button class="admin-sede-tab" onclick="switchAdminTab('alcorta')">YPF Alcorta</button>        
+        <button class="admin-sede-tab" onclick="switchAdminTab('alcorta')">YPF Alcorta</button>
+        <button class="admin-sede-tab" onclick="switchAdminTab('ugarte')">YPF Ugarte</button>
       </div>
 
       <!-- Panel Nordelta -->
@@ -356,7 +375,7 @@
       </div>
 
       <!-- Panel Alcorta -->
-      <div class="admin-panel active" id="admin-panel-alcorta">
+      <div class="admin-panel" id="admin-panel-alcorta">
         <div id="product-list-alcorta"></div>
         <div class="admin-save-row">
           <p class="admin-save-note">Los cambios se aplican inmediatamente para todos los usuarios que ingresen.</p>
@@ -375,6 +394,18 @@
           <div style="display:flex;align-items:center;gap:16px">
             <span class="admin-save-ok" id="save-ok-madero">✓ Guardado</span>
             <button class="btn-admin-save" onclick="guardarCatalogo('madero')">Guardar cambios</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Panel Ugarte -->
+      <div class="admin-panel" id="admin-panel-ugarte">
+        <div id="product-list-ugarte"></div>
+        <div class="admin-save-row">
+          <p class="admin-save-note">Los cambios se aplican inmediatamente para todos los usuarios que ingresen.</p>
+          <div style="display:flex;align-items:center;gap:16px">
+            <span class="admin-save-ok" id="save-ok-ugarte">✓ Guardado</span>
+            <button class="btn-admin-save" onclick="guardarCatalogo('ugarte')">Guardar cambios</button>
           </div>
         </div>
       </div>
@@ -401,9 +432,9 @@
 
 <div class="hero">
   <div class="hero-inner">
-    <div class="hero-eyebrow">YPF × FEED — Pedido semanal</div>
-    <h1>Hacé tu pedido<br>para la próxima semana</h1>
-    <p>Seleccioná una sede, completá el pedido por día y confirmalo. Los pedidos se pueden hacer hasta las 15hs de cada Lunes.</p>
+    <div class="hero-eyebrow">YPF × FEED</div>
+    <h1 id="hero-title">Hacé tu pedido<br>para la próxima semana</h1>
+    <p id="hero-desc">Seleccioná una sede, completá el pedido por día y confirmalo. Los pedidos se pueden hacer hasta las 15hs de cada Lunes.</p>
     <div class="week-pill" id="week-range">Cargando semana…</div>
   </div>
 </div>
@@ -414,7 +445,27 @@
     <span id="pedido-realizado-texto"></span>
   </div>
 
-  <div class="card fade-in" id="step-sede">
+  <!-- PASO 0: elegir modo -->
+  <div class="card fade-in" id="step-modo">
+    <div class="card-label">¿Qué querés hacer?</div>
+    <h2>Seleccioná una opción</h2>
+    <div class="modo-grid">
+      <div class="modo-card" onclick="irAPedido()">
+        <div class="modo-icon">📦</div>
+        <div class="modo-name">Cargar / editar pedido</div>
+        <div class="modo-desc">Pedido semanal por sede y día.</div>
+      </div>
+      <div class="modo-card" onclick="irAMerma()">
+        <div class="modo-icon">🗑️</div>
+        <div class="modo-name">Cargar merma</div>
+        <div class="modo-desc">Registrá la merma de una semana ya pedida.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PASO 1a: sede + pedido (flujo existente) -->
+  <div class="card fade-in" id="step-sede" style="display:none">
+    <button class="btn-volver-modo" onclick="volverAModo()">← Volver</button>
     <div class="card-label"> </div>
     <h2>Seleccioná la sede y cargá el pedido</h2>
     <div class="sede-grid" id="sede-grid">
@@ -439,10 +490,17 @@
         <div class="sede-cta sede-cta-nuevo">Cargar pedido <span>→</span></div>
         <div class="sede-cta-editar">✎ &nbsp;Editar pedido</div>
       </div>
+      <div class="sede-card" id="card-ugarte" onclick="startOrder('ugarte')">
+        <div class="sede-check">✓</div>
+        <div class="sede-name">YPF Ugarte</div>
+        <div class="pedido-chip">✓ &nbsp;Pedido realizado</div>
+        <div class="sede-cta sede-cta-nuevo">Cargar pedido <span>→</span></div>
+        <div class="sede-cta-editar">✎ &nbsp;Editar pedido</div>
+      </div>
     </div>
   </div>
 
-  <div id="order-section" style="display:none">
+  <div id="order-section">
     <div class="card fade-in">
       <div class="order-sede-label">
         <span class="card-label" style="margin-bottom:0">Pedido —</span>
@@ -472,6 +530,51 @@
       <div class="err-strip" id="error-msg"></div>
     </div>
   </div>
+
+  <!-- PASO 1b: sede (merma) -->
+  <div class="card fade-in" id="step-merma-sede" style="display:none">
+    <button class="btn-volver-modo" onclick="volverAModo()">← Volver</button>
+    <div class="card-label"> </div>
+    <h2>Seleccioná la sede</h2>
+    <div class="sede-grid" id="merma-sede-grid"></div>
+  </div>
+
+  <!-- PASO 2b: semana (merma) -->
+  <div class="card fade-in" id="step-merma-semana" style="display:none">
+    <button class="btn-volver-modo" onclick="volverASedeMerma()">← Volver</button>
+    <div class="card-label">Merma —</div>
+    <h2 id="merma-sede-title">—</h2>
+    <div class="semana-grid" id="semana-grid"></div>
+  </div>
+
+  <!-- PASO 3b: carga de merma -->
+  <div id="merma-section">
+    <div class="card fade-in">
+      <button class="btn-volver-modo" onclick="volverASemanaMerma()">← Volver</button>
+      <div class="order-sede-label">
+        <span class="card-label" style="margin-bottom:0">Merma —</span>
+        <span id="merma-sede-header" style="font-family:'Suez One',serif; font-size:1.05rem;"></span>
+      </div>
+      <div style="height:18px"></div>
+      <div class="edit-strip visible">
+        <span class="di">ℹ️</span>
+        <span>Se muestran todos los productos pedidos esa semana. Si no cargás merma en alguno, queda registrado como <strong>0</strong>.</span>
+      </div>
+      <div class="day-tabs" id="merma-day-tabs"></div>
+      <div id="merma-day-panels"></div>
+    </div>
+    <div class="card fade-in">
+      <div class="card-label">Resumen de merma</div>
+      <h2 id="merma-summary-title" style="margin-bottom:18px">—</h2>
+      <div class="summary-grid" id="merma-summary-grid"></div>
+      <div class="divider"></div>
+      <div class="submit-row">
+        <p class="submit-note">Al confirmar, la merma queda registrada para esta semana y sede.</p>
+        <button class="btn-confirm" id="btn-submit-merma" onclick="submitMerma()">Confirmar merma</button>
+      </div>
+      <div class="err-strip" id="merma-error-msg"></div>
+    </div>
+  </div>
 </div>
 
 <div id="success-screen">
@@ -492,23 +595,23 @@
 // ════════════════════════════════════════════════
 // CONFIGURACIÓN
 // ════════════════════════════════════════════════
-const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzZcDEYhSI34lrwGDTMch23udx6rqC0PZbHuSLCGw1_cDqJi5WtJc9lcPmXc96cvHw/exec';
+const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbx5287kDiIwtv54reCcAZAIozHRpXUkQJjL0vuFEsDt6snMBPskv1yCGCUl08vThqJ1VQ/exec';
 
 const PRODUCTS = [
-  { code: 'PFEN00001', name: 'Ensalada Caesar', categoria: 'Ensalada', conservacion: 'Refrigerar a 4°C' },
-  { code: 'PFEN00010', name: 'Ensalada Peras y queso azul', categoria: 'Ensalada', conservacion: 'Refrigerar a 4°C' },
-  { code: 'PFEN00005', name: 'Ensalada Tuna', categoria: 'Ensalada', conservacion: 'Refrigerar a 4°C'},
-  { code: 'PFPW00239', name: 'Chicken pesto bowl', categoria: 'Bowl', conservacion: 'Refrigerar a 4°C'},
-  { code: 'PFPW00238', name: 'Cob bowl', categoria: 'Bowl', conservacion: 'Refrigerar a 4°C'},
-  { code: 'PFPW00274', name: 'Risotto de hongos', categoria: 'Platos', conservacion: 'Congelar a -18°C'},
-  { code: 'PFPW00273', name: 'Ñoquis de boniato con ragu', categoria: 'Platos', conservacion: 'Congelar a -18°C'},
-  { code: 'PFPW00270', name: 'Orecchiette con crema de limon, brocoli y zucchini', categoria: 'Platos', conservacion: 'Congelar a -18°C'},
-  { code: 'PFPW00272', name: 'Sopa de boniato', categoria: 'Sopa', conservacion: 'Congelar a -18°C'},
-  { code: 'PFPW00271', name: 'Sopa de choclo', categoria: 'Sopa', conservacion: 'Congelar a -18°C'}  
+  { code: 'PFEN00001', name: 'Ensalada Caesar', categoria: 'Ensalada' },
+  { code: 'PFEN00010', name: 'Ensalada Peras y queso azul', categoria: 'Ensalada' },
+  { code: 'PFEN00005', name: 'Ensalada Tuna', categoria: 'Ensalada'},
+  { code: 'PFPW00239', name: 'Chicken pesto bowl', categoria: 'Bowl'},
+  { code: 'PFPW00238', name: 'Cob bowl', categoria: 'Bowl'},
+  { code: 'PFPW00274', name: 'Risotto de hongos', categoria: 'Platos'},
+  { code: 'PFPW00273', name: 'Ñoquis de boniato con ragu', categoria: 'Platos'},
+  { code: 'PFPW00270', name: 'Orecchiette con crema de limon, brocoli y zucchini', categoria: 'Platos'},
+  { code: 'PFPW00272', name: 'Sopa de boniato', categoria: 'Sopa'},
+  { code: 'PFPW00271', name: 'Sopa de choclo', categoria: 'Sopa'}  
 ];
 
-const SEDE_DAYS = { nordelta: [1,3,5,0], madero: [1,2,3,4,5], alcorta: [1,3,5,0] };
-const SEDE_LABELS = { nordelta: 'YPF Nordelta', madero: 'YPF Madero', alcorta: "YPF Alcorta" };
+const SEDE_DAYS = { nordelta: [1,3,5,0], madero: [1,2,3,4,5], alcorta: [1,3,5,0], ugarte: [1,3,5,0] };
+const SEDE_LABELS = { nordelta: 'YPF Nordelta', madero: 'YPF Madero', alcorta: "YPF Alcorta", ugarte: "YPF Ugarte" };
 const DAY_NAMES = ['Domingo','Lunes','Martes','Miércoles','Jueves','Viernes','Sábado'];
 const DAY_SHORT = ['Dom','Lun','Mar','Mié','Jue','Vie','Sáb'];
 
@@ -518,7 +621,8 @@ const USUARIOS_HASH = {
   'ypfmadero':   'ca78688ce87f65814690b26a33a0b28f974d88273455754693db228d3c4bc32e',
   'feedpruebas': '5974e0ddef1da67abe94e2a7505230e57e3b23f1d16c5542630dddd670151877',
   'admin':       '3ca4beea159b96d5d04c5e723f682c32672521bc9344920bbbb23023afc46e62',
-  'ypfalcorta':   'ff5ef73e6dabce4ecda61f4479ec546e2524cf071e72c550523225ea9b3b98c1'
+  'ypfalcorta':   'ff5ef73e6dabce4ecda61f4479ec546e2524cf071e72c550523225ea9b3b98c1',
+  'ypfugarte':   'feac38effff5185abd4791ed0132c21ae59ce072318c50a46ff597d562b30ecd'
 };
 const SALT = 'feed_salt_2025';
 
@@ -527,11 +631,12 @@ const SALT = 'feed_salt_2025';
 const USUARIO_SEDES = {
   'ypfnordelta': ['nordelta'],
   'ypfmadero':   ['madero'],
-  'ypfalcorta':   ['alcorta']
+  'ypfalcorta':   ['alcorta'],
+  'ypfugarte':   ['ugarte']
 };
 
 function getSedesPermitidas() {
-  return USUARIO_SEDES[sessionUsuario] || ['nordelta', 'madero','alcorta'];
+  return USUARIO_SEDES[sessionUsuario] || ['nordelta', 'madero', 'alcorta', 'ugarte'];
 }
 
 // ── ESTADO ──
@@ -543,9 +648,15 @@ let sessionUsuario   = sessionStorage.getItem('feed_usuario') || null;
 let sessionHashClave = sessionStorage.getItem('feed_hash')    || null;
 
 // Catálogo activo por sede (cargado desde servidor)
-let catalogoActivo = { nordelta: null, madero: null, alcorta: null };
+let catalogoActivo = { nordelta: null, madero: null, alcorta: null, ugarte: null };
 // Estado toggles en el admin (antes de guardar)
-let adminToggles = { nordelta: {}, madero: {}, alcorta: {} };
+let adminToggles = { nordelta: {}, madero: {}, alcorta: {}, ugarte: {} };
+
+// ── ESTADO MERMA ──
+let mermaSede      = null;
+let mermaLunes     = null; // iso del lunes de la semana elegida
+let mermaDias      = [];   // [{ fecha, productos: [{codigo,nombre,cantidadPedida,merma}] }]
+let mermaData      = {};   // { fecha: { codigo: cantidadMerma } }
 
 // ════════════════════════════════════════════════
 // LOGIN
@@ -595,8 +706,8 @@ async function showAdmin() {
   document.getElementById('login-screen').style.display = 'none';
   document.getElementById('admin-screen').style.display = 'flex';
 
-  // Cargar catálogos actuales del servidor para ambas sedes
-  await Promise.all(['nordelta','madero', 'alcorta'].map(async sede => {
+  // Cargar catálogos actuales del servidor para todas las sedes
+  await Promise.all(['nordelta','madero', 'alcorta', 'ugarte'].map(async sede => {
     try {
       const url = APPS_SCRIPT_URL + '?action=getCatalogo&sede=' + encodeURIComponent(SEDE_LABELS[sede]);
       const res  = await fetch(url);
@@ -614,6 +725,7 @@ async function showAdmin() {
   renderAdminPanel('nordelta');
   renderAdminPanel('madero');
   renderAdminPanel('alcorta');
+  renderAdminPanel('ugarte');
 }
 
 function renderAdminPanel(sede) {
@@ -693,7 +805,7 @@ function showApp() {
 
   // Mostrar solo las sedes permitidas para este usuario
   const permitidas = getSedesPermitidas();
-  ['nordelta', 'madero', 'alcorta'].forEach(s => {
+  ['nordelta', 'madero', 'alcorta', 'ugarte'].forEach(s => {
     document.getElementById('card-' + s).style.display = permitidas.includes(s) ? '' : 'none';
   });
   // Si solo hay una sede visible, usar layout de una columna
@@ -737,9 +849,64 @@ function fmtDate(d) { return d.toLocaleDateString('es-AR', { day: 'numeric', mon
 function isoDate(d) { return d.toISOString().split('T')[0]; }
 
 // ════════════════════════════════════════════════
+// NAVEGACIÓN ENTRE MODOS (pedido / merma)
+// ════════════════════════════════════════════════
+function ocultarTodosLosPasos() {
+  ['step-modo','step-sede','order-section','step-merma-sede','step-merma-semana','merma-section']
+    .forEach(id => { document.getElementById(id).style.display = 'none'; });
+}
+
+function irAPedido() {
+  ocultarTodosLosPasos();
+  document.getElementById('step-sede').style.display = 'block';
+  document.getElementById('hero-title').innerHTML = 'Hacé tu pedido<br>para la próxima semana';
+  document.getElementById('hero-desc').textContent = 'Seleccioná una sede, completá el pedido por día y confirmalo. Los pedidos se pueden hacer hasta las 15hs de cada Lunes.';
+}
+
+function irAMerma() {
+  ocultarTodosLosPasos();
+  document.getElementById('hero-title').innerHTML = 'Cargá la merma<br>de una semana ya pedida';
+  document.getElementById('hero-desc').textContent = 'Elegí la sede y la semana. Vas a ver los productos pedidos por día para cargar la cantidad de merma.';
+
+  const permitidas = getSedesPermitidas();
+  if (permitidas.length === 1) {
+    seleccionarSedeMerma(permitidas[0]);
+    return;
+  }
+
+  const grid = document.getElementById('merma-sede-grid');
+  grid.innerHTML = '';
+  permitidas.forEach(s => {
+    const div = document.createElement('div');
+    div.className = 'sede-card';
+    div.onclick = () => seleccionarSedeMerma(s);
+    div.innerHTML = `<div class="sede-name">${SEDE_LABELS[s]}</div>`;
+    grid.appendChild(div);
+  });
+  document.getElementById('step-merma-sede').style.display = 'block';
+}
+
+function volverAModo() {
+  ocultarTodosLosPasos();
+  document.getElementById('step-modo').style.display = 'block';
+}
+
+function volverASedeMerma() {
+  ocultarTodosLosPasos();
+  const permitidas = getSedesPermitidas();
+  if (permitidas.length === 1) { volverAModo(); return; }
+  document.getElementById('step-merma-sede').style.display = 'block';
+}
+
+function volverASemanaMerma() {
+  ocultarTodosLosPasos();
+  document.getElementById('step-merma-semana').style.display = 'block';
+}
+
+// ════════════════════════════════════════════════
 // ESTADO DESDE SERVIDOR (pedidos + catálogo activo)
 // ════════════════════════════════════════════════
-let pedidosServidor = { nordelta: null, madero: null, alcorta: null };
+let pedidosServidor = { nordelta: null, madero: null, alcorta: null, ugarte: null };
 
 async function cargarEstadoDesdeServidor() {
   // Solo cargar las sedes a las que el usuario tiene acceso
@@ -802,6 +969,7 @@ function startOrder(sede) {
   deliveryDates = [];
   isEditing     = pedidosServidor[sede] !== null;
 
+  ocultarTodosLosPasos();
   document.getElementById('order-section').style.display = 'block';
   document.getElementById('order-sede-title').textContent = SEDE_LABELS[sede];
   document.getElementById('summary-title').textContent    = SEDE_LABELS[sede];
@@ -862,10 +1030,7 @@ function buildDayUI() {
         <td class="code">
           <span class="cat-chip cat-${p.categoria}">${p.code}</span>
         </td>
-        <td>
-          ${p.name}
-          <span class="p-conservacion ${p.conservacion && p.conservacion.toLowerCase().includes('congel') ? 'congelado' : 'frio'}">${p.conservacion || ''}</span>
-        </td>
+        <td>${p.name}</td>
         <td>
           <div class="qty-wrap">
             <button class="qty-btn" onclick="changeQty('${iso}','${p.code}',-1)">−</button>
@@ -907,14 +1072,14 @@ function buildDayUI() {
 }
 
 function switchDay(iso) {
-  document.querySelectorAll('.day-tab').forEach(t => t.classList.remove('active'));
-  document.querySelectorAll('.day-panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('#day-tabs .day-tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('#day-panels .day-panel').forEach(p => p.classList.remove('active'));
   document.getElementById('tab-' + iso).classList.add('active');
   document.getElementById('panel-' + iso).classList.add('active');
 }
 
 // ════════════════════════════════════════════════
-// CANTIDADES
+// CANTIDADES (pedido)
 // ════════════════════════════════════════════════
 function changeQty(iso, code, delta) {
   const next = Math.max(0, (orderData[iso][code] || 0) + delta);
@@ -935,7 +1100,7 @@ function refreshDot(iso) {
 }
 
 // ════════════════════════════════════════════════
-// RESUMEN
+// RESUMEN (pedido)
 // ════════════════════════════════════════════════
 function updateSummary() {
   const grid = document.getElementById('summary-grid');
@@ -957,7 +1122,7 @@ function updateSummary() {
 }
 
 // ════════════════════════════════════════════════
-// SUBMIT
+// SUBMIT (pedido)
 // ════════════════════════════════════════════════
 async function submitOrder() {
   const total = deliveryDates.reduce((sum, d) => sum + Object.values(orderData[isoDate(d)] || {}).reduce((s,q) => s+q, 0), 0);
@@ -995,7 +1160,7 @@ async function submitOrder() {
 }
 
 // ════════════════════════════════════════════════
-// ÉXITO
+// ÉXITO (pedido)
 // ════════════════════════════════════════════════
 function onOrderSuccess() {
   const fechaHoy = new Date().toLocaleDateString('es-AR', { day:'2-digit', month:'2-digit', year:'numeric', timeZone:'America/Argentina/Buenos_Aires' });
@@ -1011,6 +1176,245 @@ function onOrderSuccess() {
   document.getElementById('app-container').style.display  = 'none';
   document.getElementById('success-screen').style.display = 'block';
   document.getElementById('success-sede-label').textContent = SEDE_LABELS[currentSede];
+  window._successFrom = 'pedido';
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+// ════════════════════════════════════════════════
+// MERMA — SELECCIÓN DE SEDE
+// ════════════════════════════════════════════════
+async function seleccionarSedeMerma(sede) {
+  mermaSede = sede;
+  document.getElementById('merma-sede-title').textContent = SEDE_LABELS[sede];
+  await cargarSemanasMerma();
+}
+
+// ════════════════════════════════════════════════
+// MERMA — SELECCIÓN DE SEMANA (últimas 4 con pedido)
+// ════════════════════════════════════════════════
+async function cargarSemanasMerma() {
+  ocultarTodosLosPasos();
+  const grid = document.getElementById('semana-grid');
+  grid.innerHTML = '<p class="semana-empty">Cargando semanas…</p>';
+  document.getElementById('step-merma-semana').style.display = 'block';
+
+  try {
+    const url = APPS_SCRIPT_URL + '?action=getSemanasConPedido'
+      + '&usuario=' + encodeURIComponent(sessionUsuario)
+      + '&sede='    + encodeURIComponent(SEDE_LABELS[mermaSede]);
+    const res  = await fetch(url);
+    const json = await res.json();
+    const semanas = json.semanas || [];
+
+    if (semanas.length === 0) {
+      grid.innerHTML = '<p class="semana-empty">Todavía no hay pedidos cargados para esta sede.</p>';
+      return;
+    }
+
+    grid.innerHTML = '';
+    semanas.forEach(s => {
+      const div = document.createElement('div');
+      div.className = 'semana-card';
+      div.onclick = () => seleccionarSemanaMerma(s.lunes, s.etiqueta);
+      div.innerHTML = `<span class="semana-label">${s.etiqueta}</span><span class="semana-arrow">→</span>`;
+      grid.appendChild(div);
+    });
+  } catch (e) {
+    grid.innerHTML = '<p class="semana-empty">Error al cargar las semanas. Intentá nuevamente.</p>';
+  }
+}
+
+// ════════════════════════════════════════════════
+// MERMA — CARGAR PEDIDO DE LA SEMANA ELEGIDA
+// ════════════════════════════════════════════════
+async function seleccionarSemanaMerma(lunesIso, etiqueta) {
+  mermaLunes = lunesIso;
+  mermaData  = {};
+
+  ocultarTodosLosPasos();
+  document.getElementById('merma-section').style.display = 'block';
+  document.getElementById('merma-sede-header').textContent = SEDE_LABELS[mermaSede] + ' — ' + etiqueta;
+  document.getElementById('merma-summary-title').textContent = SEDE_LABELS[mermaSede];
+  document.getElementById('merma-day-tabs').innerHTML = '';
+  document.getElementById('merma-day-panels').innerHTML = '<p style="color:var(--ink-soft);font-size:0.85rem">Cargando pedido de la semana…</p>';
+  hideMermaError();
+
+  try {
+    const url = APPS_SCRIPT_URL + '?action=getPedidoParaMerma'
+      + '&usuario=' + encodeURIComponent(sessionUsuario)
+      + '&sede='    + encodeURIComponent(SEDE_LABELS[mermaSede])
+      + '&lunes='   + encodeURIComponent(lunesIso);
+    const res  = await fetch(url);
+    const json = await res.json();
+    mermaDias = json.dias || [];
+    buildMermaUI();
+  } catch (e) {
+    document.getElementById('merma-day-panels').innerHTML = '<p style="color:var(--err);font-size:0.85rem">Error al cargar el pedido de esta semana.</p>';
+  }
+
+  document.getElementById('merma-section').scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+// ════════════════════════════════════════════════
+// MERMA — CONSTRUIR UI POR DÍA
+// ════════════════════════════════════════════════
+function buildMermaUI() {
+  const tabsEl   = document.getElementById('merma-day-tabs');
+  const panelsEl = document.getElementById('merma-day-panels');
+  tabsEl.innerHTML   = '';
+  panelsEl.innerHTML = '';
+
+  if (mermaDias.length === 0) {
+    panelsEl.innerHTML = '<p style="color:var(--ink-soft);font-size:0.85rem">No se encontraron productos pedidos para esta semana.</p>';
+    return;
+  }
+
+  mermaDias.forEach((dia, idx) => {
+    const iso = dia.fecha;
+    const d   = new Date(iso + 'T00:00:00');
+    const dow = d.getDay();
+
+    mermaData[iso] = {};
+    dia.productos.forEach(p => { mermaData[iso][p.codigo] = p.merma || 0; });
+
+    const tab = document.createElement('button');
+    tab.className = 'day-tab' + (idx === 0 ? ' active' : '');
+    tab.id = 'mtab-' + iso;
+    tab.innerHTML = DAY_SHORT[dow] + ' ' + d.getDate() + ' <span class="dot" id="mdot-' + iso + '"></span>';
+    tab.onclick = () => switchMermaDay(iso);
+    tabsEl.appendChild(tab);
+
+    const panel = document.createElement('div');
+    panel.className = 'day-panel' + (idx === 0 ? ' active' : '');
+    panel.id = 'mpanel-' + iso;
+
+    const rows = dia.productos.map(p => `
+      <tr>
+        <td>${p.nombre}</td>
+        <td class="cant-pedida">${p.cantidadPedida}</td>
+        <td>
+          <div class="qty-wrap merma-qty">
+            <button class="qty-btn" onclick="changeMermaQty('${iso}','${p.codigo}',-1)">−</button>
+            <input class="qty-input" type="number" min="0" value="${p.merma || 0}"
+              id="mqty-${iso}-${p.codigo}"
+              oninput="setMermaQty('${iso}','${p.codigo}',this.value)"
+              onchange="setMermaQty('${iso}','${p.codigo}',this.value)" />
+            <button class="qty-btn" onclick="changeMermaQty('${iso}','${p.codigo}',1)">+</button>
+          </div>
+        </td>
+      </tr>`).join('');
+
+    panel.innerHTML = `
+      <div class="day-header">
+        <h3>${DAY_NAMES[dow]}</h3>
+        <span class="date-str">${d.toLocaleDateString('es-AR',{day:'numeric',month:'long',year:'numeric'})}</span>
+      </div>
+      <table class="ptable">
+        <thead><tr><th>Producto</th><th style="text-align:center">Pedido</th><th>Merma</th></tr></thead>
+        <tbody>${rows}</tbody>
+      </table>`;
+    panelsEl.appendChild(panel);
+
+    refreshMermaDot(iso);
+  });
+
+  updateMermaSummary();
+}
+
+function switchMermaDay(iso) {
+  document.querySelectorAll('#merma-day-tabs .day-tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('#merma-day-panels .day-panel').forEach(p => p.classList.remove('active'));
+  document.getElementById('mtab-' + iso).classList.add('active');
+  document.getElementById('mpanel-' + iso).classList.add('active');
+}
+
+// ════════════════════════════════════════════════
+// MERMA — CANTIDADES
+// ════════════════════════════════════════════════
+function changeMermaQty(iso, code, delta) {
+  const next = Math.max(0, (mermaData[iso][code] || 0) + delta);
+  mermaData[iso][code] = next;
+  document.getElementById('mqty-' + iso + '-' + code).value = next;
+  refreshMermaDot(iso); updateMermaSummary();
+}
+function setMermaQty(iso, code, val) {
+  const n = Math.max(0, parseInt(val) || 0);
+  mermaData[iso][code] = n;
+  document.getElementById('mqty-' + iso + '-' + code).value = n;
+  refreshMermaDot(iso); updateMermaSummary();
+}
+function refreshMermaDot(iso) {
+  const has = Object.values(mermaData[iso] || {}).some(q => q > 0);
+  const dot = document.getElementById('mdot-' + iso);
+  if (dot) dot.classList.toggle('visible', has);
+}
+
+// ════════════════════════════════════════════════
+// MERMA — RESUMEN
+// ════════════════════════════════════════════════
+function updateMermaSummary() {
+  const grid = document.getElementById('merma-summary-grid');
+  if (!grid) return;
+  grid.innerHTML = '';
+  mermaDias.forEach(dia => {
+    const iso = dia.fecha;
+    const d   = new Date(iso + 'T00:00:00');
+    const dow = d.getDay();
+    const has = Object.values(mermaData[iso] || {}).some(q => q > 0);
+    const div = document.createElement('div');
+    div.className = 's-day';
+    let html = '<div class="s-day-name">' + DAY_SHORT[dow] + ' ' + d.getDate() + '</div>';
+    if (!has) { html += '<div class="s-empty">Sin merma</div>'; }
+    else { dia.productos.forEach(p => { if ((mermaData[iso] || {})[p.codigo] > 0) html += '<div class="s-item">× ' + mermaData[iso][p.codigo] + ' ' + p.nombre + '</div>'; }); }
+    div.innerHTML = html;
+    grid.appendChild(div);
+  });
+}
+
+// ════════════════════════════════════════════════
+// MERMA — SUBMIT
+// ════════════════════════════════════════════════
+async function submitMerma() {
+  if (mermaDias.length === 0) { showMermaError('No hay productos para cargar merma en esta semana.'); return; }
+
+  const btn = document.getElementById('btn-submit-merma');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span>Enviando…';
+  hideMermaError();
+
+  // Se envían TODOS los productos pedidos, incluso con merma 0
+  const payload = {
+    action: 'merma',
+    usuario: sessionUsuario,
+    sede: SEDE_LABELS[mermaSede],
+    dias: mermaDias.map(dia => ({
+      fecha: dia.fecha,
+      dia: DAY_NAMES[new Date(dia.fecha + 'T00:00:00').getDay()],
+      productos: dia.productos.map(p => ({
+        codigo: p.codigo,
+        nombre: p.nombre,
+        cantidad: (mermaData[dia.fecha] || {})[p.codigo] || 0,
+      })),
+    })),
+  };
+
+  try {
+    await fetch(APPS_SCRIPT_URL, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+    onMermaSuccess();
+  } catch (err) {
+    showMermaError('Hubo un error al enviar la merma. Intentá nuevamente o escribinos a mariano@somosfeed.com.ar');
+    btn.disabled = false;
+    btn.innerHTML = 'Confirmar merma';
+  }
+}
+
+function onMermaSuccess() {
+  document.getElementById('success-title').textContent = '¡Merma registrada!';
+  document.getElementById('success-msg').textContent   = 'La merma fue registrada correctamente para esta semana.';
+  document.getElementById('app-container').style.display  = 'none';
+  document.getElementById('success-screen').style.display = 'block';
+  document.getElementById('success-sede-label').textContent = SEDE_LABELS[mermaSede];
+  window._successFrom = 'merma';
   window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
@@ -1020,16 +1424,30 @@ function onOrderSuccess() {
 function backToHome() {
   document.getElementById('success-screen').style.display = 'none';
   document.getElementById('app-container').style.display  = 'block';
-  document.getElementById('order-section').style.display  = 'none';
+
+  // Reset pedido
   currentSede = null; orderData = {}; deliveryDates = []; isEditing = false;
   const btn = document.getElementById('btn-submit');
   btn.disabled = false; btn.textContent = 'Confirmar pedido';
+
+  // Reset merma
+  mermaSede = null; mermaLunes = null; mermaDias = []; mermaData = {};
+  const btnM = document.getElementById('btn-submit-merma');
+  btnM.disabled = false; btnM.textContent = 'Confirmar merma';
+
+  document.getElementById('hero-title').innerHTML = 'Hacé tu pedido<br>para la próxima semana';
+  document.getElementById('hero-desc').textContent = 'Seleccioná una sede, completá el pedido por día y confirmalo. Los pedidos se pueden hacer hasta las 15hs de cada Lunes.';
+
+  ocultarTodosLosPasos();
+  document.getElementById('step-modo').style.display = 'block';
   actualizarBannerYCards();
   window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
 function showError(msg) { const el = document.getElementById('error-msg'); el.textContent = msg; el.style.display = 'block'; }
 function hideError()    { document.getElementById('error-msg').style.display = 'none'; }
+function showMermaError(msg) { const el = document.getElementById('merma-error-msg'); el.textContent = msg; el.style.display = 'block'; }
+function hideMermaError()    { document.getElementById('merma-error-msg').style.display = 'none'; }
 
 init();
 </script>
