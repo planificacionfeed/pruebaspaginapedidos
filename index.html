@@ -162,6 +162,11 @@
     .btn-confirm { background: var(--ink); color: var(--white); border: 2px solid var(--ink); padding: 14px 44px; border-radius: 6px; font-size: 0.85rem; font-weight: 700; font-family: 'Lato', sans-serif; letter-spacing: 1.5px; text-transform: uppercase; cursor: pointer; transition: background .18s, color .18s, transform .15s; white-space: nowrap; }
     .btn-confirm:hover { background: var(--white); color: var(--ink); transform: translateY(-1px); }
     .btn-confirm:disabled { background: var(--line); border-color: var(--line); color: var(--white); cursor: not-allowed; transform: none; }
+    .btn-cancel { background: transparent; color: var(--ink-soft); border: 1.5px solid var(--line); padding: 13px 28px; border-radius: 6px; font-size: 0.82rem; font-weight: 700; font-family: 'Lato', sans-serif; letter-spacing: 1px; text-transform: uppercase; cursor: pointer; transition: all .18s; white-space: nowrap; }
+    .btn-cancel:hover { border-color: var(--err); color: var(--err); background: #FDECEA; }
+    .btn-logout { background: transparent; border: 1.5px solid var(--line); color: var(--ink-soft); padding: 8px 16px; border-radius: 6px; font-size: 0.72rem; font-weight: 700; font-family: 'Lato', sans-serif; letter-spacing: 1px; text-transform: uppercase; cursor: pointer; transition: all .18s; }
+    .btn-logout:hover { border-color: var(--err); color: var(--err); background: #FDECEA; }
+    .header-right { display: flex; align-items: center; gap: 16px; }
     .err-strip { background: #FDECEA; border: 1px solid #E8998F; border-radius: 8px; padding: 11px 16px; font-size: 0.83rem; color: var(--err); margin-top: 14px; display: none; line-height: 1.5; }
 
     /* SUCCESS */
@@ -339,7 +344,10 @@
       <text x="318" y="20" font-family="Arial, sans-serif" font-size="18" fill="#1D1D1B">®</text>
       <text x="2" y="100" font-family="Arial, sans-serif" font-size="11" font-weight="700" fill="#1D1D1B" letter-spacing="2.5">HAPPINESS IS HOMEMADE</text>
     </svg>
-    <div class="header-tag">Panel de administración</div>
+    <div class="header-right">
+      <div class="header-tag">Panel de administración</div>
+      <button class="btn-logout" onclick="cerrarSesion()">Cerrar sesión</button>
+    </div>
   </header>
 
   <div class="admin-hero">
@@ -427,7 +435,10 @@
     <text x="318" y="20" font-family="Arial, sans-serif" font-size="18" fill="#1D1D1B">®</text>
     <text x="2" y="100" font-family="Arial, sans-serif" font-size="11" font-weight="700" fill="#1D1D1B" letter-spacing="2.5">HAPPINESS IS HOMEMADE</text>
   </svg>
-  <div class="header-tag">Portal de pedidos · YPF (PRUEBAS)</div>
+  <div class="header-right">
+    <div class="header-tag">Portal de pedidos · YPF (PRUEBAS)</div>
+    <button class="btn-logout" onclick="cerrarSesion()">Cerrar sesión</button>
+  </div>
 </header>
 
 <div class="hero">
@@ -525,7 +536,10 @@
       <div class="divider"></div>
       <div class="submit-row">
         <p class="submit-note">Al confirmar, el pedido queda registrado y el equipo de planificación recibe una notificación.</p>
-        <button class="btn-confirm" id="btn-submit" onclick="submitOrder()">Confirmar pedido</button>
+        <div style="display:flex; gap:12px; flex-wrap:wrap">
+          <button class="btn-cancel" onclick="cancelarPedido()">Cancelar y volver al inicio</button>
+          <button class="btn-confirm" id="btn-submit" onclick="submitOrder()">Confirmar pedido</button>
+        </div>
       </div>
       <div class="err-strip" id="error-msg"></div>
     </div>
@@ -570,7 +584,10 @@
       <div class="divider"></div>
       <div class="submit-row">
         <p class="submit-note">Al confirmar, la merma queda registrada para esta semana y sede.</p>
-        <button class="btn-confirm" id="btn-submit-merma" onclick="submitMerma()">Confirmar merma</button>
+        <div style="display:flex; gap:12px; flex-wrap:wrap">
+          <button class="btn-cancel" onclick="cancelarMerma()">Cancelar y volver al inicio</button>
+          <button class="btn-confirm" id="btn-submit-merma" onclick="submitMerma()">Confirmar merma</button>
+        </div>
       </div>
       <div class="err-strip" id="merma-error-msg"></div>
     </div>
@@ -1448,6 +1465,47 @@ function showError(msg) { const el = document.getElementById('error-msg'); el.te
 function hideError()    { document.getElementById('error-msg').style.display = 'none'; }
 function showMermaError(msg) { const el = document.getElementById('merma-error-msg'); el.textContent = msg; el.style.display = 'block'; }
 function hideMermaError()    { document.getElementById('merma-error-msg').style.display = 'none'; }
+
+// ════════════════════════════════════════════════
+// CANCELAR (pedido / merma) — vuelve al inicio sin guardar nada
+// ════════════════════════════════════════════════
+function cancelarPedido() {
+  currentSede = null; orderData = {}; deliveryDates = []; isEditing = false;
+  const btn = document.getElementById('btn-submit');
+  btn.disabled = false; btn.textContent = 'Confirmar pedido';
+  hideError();
+  volverAModo();
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function cancelarMerma() {
+  mermaSede = null; mermaLunes = null; mermaDias = []; mermaData = {};
+  const btnM = document.getElementById('btn-submit-merma');
+  btnM.disabled = false; btnM.textContent = 'Confirmar merma';
+  hideMermaError();
+  volverAModo();
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+// ════════════════════════════════════════════════
+// CERRAR SESIÓN
+// ════════════════════════════════════════════════
+function cerrarSesion() {
+  sessionStorage.removeItem('feed_usuario');
+  sessionStorage.removeItem('feed_hash');
+  sessionUsuario = null;
+  sessionHashClave = null;
+  // Reset de estados por las dudas de que se vuelva a entrar en la misma sesión de navegador
+  currentSede = null; orderData = {}; deliveryDates = []; isEditing = false;
+  mermaSede = null; mermaLunes = null; mermaDias = []; mermaData = {};
+  document.getElementById('main-app').style.display    = 'none';
+  document.getElementById('admin-screen').style.display = 'none';
+  document.getElementById('success-screen').style.display = 'none';
+  document.getElementById('login-screen').style.display = 'flex';
+  document.getElementById('input-usuario').value = '';
+  document.getElementById('input-clave').value = '';
+  document.getElementById('login-error').style.display = 'none';
+}
 
 init();
 </script>
