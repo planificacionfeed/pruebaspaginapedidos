@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>FEED — Pedido Semanal YPF</title>
-  <link href="https://fonts.googleapis.com/css2?family=Suez+One&family=Lato:wght@300;400;700&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Work+Sans&family=Lato:wght@300;400;700&display=swap" rel="stylesheet" />
   <style>
     :root {
       --ink:      #1D1D1B;
@@ -35,7 +35,7 @@
     .hero::before { content: ''; position: absolute; inset: 0; background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E"); opacity: 0.4; pointer-events: none; }
     .hero-inner { position: relative; max-width: 860px; margin: 0 auto; }
     .hero-eyebrow { font-size: 0.7rem; font-weight: 700; letter-spacing: 3.5px; text-transform: uppercase; color: rgba(255,255,255,0.4); margin-bottom: 12px; }
-    .hero h1 { font-family: 'Suez One', serif; font-size: clamp(2rem, 5vw, 3.4rem); line-height: 1.05; margin-bottom: 12px; }
+    .hero h1 { font-family: 'Work Sans', serif; font-size: clamp(2rem, 5vw, 3.4rem); line-height: 1.05; margin-bottom: 12px; }
     .hero p { font-size: 0.93rem; color: rgba(255,255,255,0.58); max-width: 400px; line-height: 1.65; }
     .week-pill { display: inline-flex; align-items: center; gap: 8px; margin-top: 20px; background: rgba(255,255,255,0.09); border: 1px solid rgba(255,255,255,0.16); border-radius: 4px; padding: 7px 16px; font-size: 0.81rem; font-weight: 700; letter-spacing: 0.5px; color: rgba(255,255,255,0.82); }
     .week-pill::before { content: ''; display: inline-block; width: 7px; height: 7px; background: #C8A84B; border-radius: 50%; }
@@ -46,14 +46,14 @@
     /* CARD */
     .card { background: var(--white); border: 1.5px solid var(--line); border-radius: var(--radius); padding: 32px 36px; margin-bottom: 24px; }
     .card-label { font-size: 0.67rem; font-weight: 700; letter-spacing: 3px; text-transform: uppercase; color: var(--accent2); margin-bottom: 6px; }
-    .card h2 { font-family: 'Suez One', serif; font-size: 1.4rem; color: var(--ink); margin-bottom: 22px; line-height: 1.2; }
+    .card h2 { font-family: 'Work Sans', serif; font-size: 1.4rem; color: var(--ink); margin-bottom: 22px; line-height: 1.2; }
 
     /* MODO SELECTOR (pedido / merma) */
     .modo-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
     .modo-card { border: 1.5px solid var(--line); border-radius: var(--radius); padding: 26px 24px; cursor: pointer; transition: border-color .18s, background .18s, transform .15s; background: var(--cream); }
     .modo-card:hover { border-color: var(--ink); background: var(--cream-dk); transform: translateY(-1px); }
     .modo-card .modo-icon { font-size: 1.8rem; margin-bottom: 10px; }
-    .modo-card .modo-name { font-family: 'Suez One', serif; font-size: 1.15rem; margin-bottom: 5px; }
+    .modo-card .modo-name { font-family: 'Work Sans', serif; font-size: 1.15rem; margin-bottom: 5px; }
     .modo-card .modo-desc { font-size: 0.8rem; color: var(--ink-soft); line-height: 1.45; }
     .btn-volver-modo { background: transparent; border: none; color: var(--ink-soft); font-size: 0.8rem; font-weight: 700; letter-spacing: 0.5px; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; margin-bottom: 18px; padding: 4px 0; }
     .btn-volver-modo:hover { color: var(--ink); }
@@ -65,7 +65,7 @@
     .sede-card:hover { border-color: var(--accent2); background: var(--cream-dk); }
     .sede-card.has-pedido { border-color: var(--ok-br); background: var(--ok-bg); }
     .sede-card.has-pedido:hover { border-color: var(--ok); background: #DDF0E8; }
-    .sede-card .sede-name { font-family: 'Suez One', serif; font-size: 1.15rem; margin-bottom: 5px; }
+    .sede-card .sede-name { font-family: 'Work Sans', serif; font-size: 1.15rem; margin-bottom: 5px; }
     .sede-card .sede-days { font-size: 0.77rem; color: var(--ink-soft); }
     .pedido-chip { display: none; align-items: center; gap: 6px; margin-top: 10px; background: var(--ok-bg); border: 1px solid var(--ok-br); color: var(--ok); font-size: 0.72rem; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; padding: 4px 10px; border-radius: 4px; width: fit-content; }
     .sede-card.has-pedido .pedido-chip { display: flex; }
@@ -107,7 +107,7 @@
     .day-panel { display: none; }
     .day-panel.active { display: block; }
     .day-header { display: flex; align-items: baseline; gap: 12px; margin-bottom: 18px; }
-    .day-header h3 { font-family: 'Suez One', serif; font-size: 1.2rem; }
+    .day-header h3 { font-family: 'Work Sans', serif; font-size: 1.2rem; }
     .day-header .date-str { font-size: 0.8rem; color: var(--ink-soft); }
 
     /* PRODUCT TABLE */
@@ -172,7 +172,7 @@
     /* SUCCESS */
     #success-screen { display: none; max-width: 520px; margin: 72px auto; text-align: center; padding: 0 20px; }
     .success-icon { width: 68px; height: 68px; background: var(--ok); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 26px; font-size: 1.8rem; color: white; }
-    #success-screen h2 { font-family: 'Suez One', serif; font-size: 1.9rem; color: var(--ink); margin-bottom: 10px; }
+    #success-screen h2 { font-family: 'Work Sans', serif; font-size: 1.9rem; color: var(--ink); margin-bottom: 10px; }
     #success-screen .success-sede { display: inline-block; background: var(--ink); color: white; font-size: 0.75rem; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; padding: 5px 14px; border-radius: 4px; margin-bottom: 16px; }
     #success-screen p { font-size: 0.92rem; color: var(--ink-soft); line-height: 1.65; margin-bottom: 30px; max-width: 380px; margin-left: auto; margin-right: auto; }
     .btn-back { display: inline-block; padding: 13px 36px; border: 2px solid var(--ink); border-radius: 6px; color: var(--ink); font-weight: 700; font-size: 0.82rem; letter-spacing: 1.5px; text-transform: uppercase; cursor: pointer; background: transparent; font-family: 'Lato', sans-serif; transition: all .18s; }
@@ -203,7 +203,7 @@
     #login-screen { min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 24px 20px; background: var(--cream); }
     .login-box { background: var(--white); border: 1.5px solid var(--line); border-radius: var(--radius); padding: 44px 40px 40px; width: 100%; max-width: 400px; text-align: center; }
     .login-box .login-logo { margin-bottom: 28px; }
-    .login-box h2 { font-family: 'Suez One', serif; font-size: 1.4rem; margin-bottom: 6px; }
+    .login-box h2 { font-family: 'Work Sans', serif; font-size: 1.4rem; margin-bottom: 6px; }
     .login-box .login-sub { font-size: 0.82rem; color: var(--ink-soft); margin-bottom: 28px; }
     .login-field { text-align: left; margin-bottom: 16px; }
     .login-field label { display: block; font-size: 0.72rem; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; color: var(--ink-soft); margin-bottom: 6px; }
@@ -227,7 +227,7 @@
     }
     .admin-hero-inner { max-width: 860px; margin: 0 auto; }
     .admin-hero .eyebrow { font-size: 0.7rem; font-weight: 700; letter-spacing: 3px; text-transform: uppercase; color: rgba(255,255,255,0.4); margin-bottom: 10px; }
-    .admin-hero h1 { font-family: 'Suez One', serif; font-size: clamp(1.6rem, 3vw, 2.4rem); }
+    .admin-hero h1 { font-family: 'Work Sans', serif; font-size: clamp(1.6rem, 3vw, 2.4rem); }
     .admin-hero p { font-size: 0.88rem; color: rgba(255,255,255,0.55); margin-top: 8px; }
 
     .admin-container { max-width: 860px; margin: 0 auto; padding: 32px 20px 80px; flex: 1; }
@@ -503,7 +503,7 @@
     <div class="card fade-in">
       <div class="order-sede-label">
         <span class="card-label" style="margin-bottom:0">Pedido —</span>
-        <span id="order-sede-title" style="font-family:'Suez One',serif; font-size:1.05rem;"></span>
+        <span id="order-sede-title" style="font-family:'Work Sans',serif; font-size:1.05rem;"></span>
       </div>
       <div style="height:18px"></div>
       <div class="edit-strip" id="edit-strip">
@@ -555,7 +555,7 @@
       <button class="btn-volver-modo" onclick="volverASemanaMerma()">← Volver</button>
       <div class="order-sede-label">
         <span class="card-label" style="margin-bottom:0">Merma —</span>
-        <span id="merma-sede-header" style="font-family:'Suez One',serif; font-size:1.05rem;"></span>
+        <span id="merma-sede-header" style="font-family:'Work Sans',serif; font-size:1.05rem;"></span>
       </div>
       <div style="height:18px"></div>
       <div class="edit-strip visible">
