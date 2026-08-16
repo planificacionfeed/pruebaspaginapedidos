@@ -321,7 +321,7 @@
         <text x="2" y="100" font-family="Arial, sans-serif" font-size="11" font-weight="700" fill="#1D1D1B" letter-spacing="2.5">HAPPINESS IS HOMEMADE</text>
       </svg>
     </div>
-    <h2>Portal YPF (PRUEBAS)</h2>
+    <h2>Portal YPF</h2>
     <p class="login-sub">Ingresá con tu usuario y contraseña</p>
     <div class="login-field">
       <label for="input-usuario">Usuario</label>
@@ -436,7 +436,7 @@
     <text x="2" y="100" font-family="Arial, sans-serif" font-size="11" font-weight="700" fill="#1D1D1B" letter-spacing="2.5">HAPPINESS IS HOMEMADE</text>
   </svg>
   <div class="header-right">
-    <div class="header-tag">Portal de pedidos · YPF (PRUEBAS)</div>
+    <div class="header-tag">Portal de pedidos · YPF</div>
     <button class="btn-logout" onclick="cerrarSesion()">Cerrar sesión</button>
   </div>
 </header>
@@ -612,7 +612,7 @@
 // ════════════════════════════════════════════════
 // CONFIGURACIÓN
 // ════════════════════════════════════════════════
-const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxNGk93nlz-8sQlaXaIw0MZeUX9JFBHdikG-sj3VHwpQBLhu42auvmqC5sT3fPQyVdk/exec';
+const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzyY0jsJcFAYjIRQCkCwAup2BAJfwFl0u6sNeXpxTDgubH8Ot1CixzhUcH6fXhq_jGxoA/exec';
 
 const PRODUCTS = [
   { code: 'PFEN00001', name: 'Ensalada Caesar', categoria: 'Ensalada' },
@@ -632,28 +632,18 @@ const SEDE_LABELS = { nordelta: 'YPF Nordelta', madero: 'YPF Madero', alcorta: "
 const DAY_NAMES = ['Domingo','Lunes','Martes','Miércoles','Jueves','Viernes','Sábado'];
 const DAY_SHORT = ['Dom','Lun','Mar','Mié','Jue','Vie','Sáb'];
 
-// ── USUARIOS ──
-const USUARIOS_HASH = {
-  'ypfnordelta': '811e0aff9691ead263abb1cf4a5643385da2493b9ed2290efbb4dc30aff8faac',
-  'ypfmadero':   'ca78688ce87f65814690b26a33a0b28f974d88273455754693db228d3c4bc32e',
-  'feedpruebas': '5974e0ddef1da67abe94e2a7505230e57e3b23f1d16c5542630dddd670151877',
-  'admin':       '3ca4beea159b96d5d04c5e723f682c32672521bc9344920bbbb23023afc46e62',
-  'ypfalcorta':   'ff5ef73e6dabce4ecda61f4479ec546e2524cf071e72c550523225ea9b3b98c1',
-  'ypfugarte':   'feac38effff5185abd4791ed0132c21ae59ce072318c50a46ff597d562b30ecd'
-};
-const SALT = 'feed_salt_2025';
-
-// ── SEDES PERMITIDAS POR USUARIO ──
-// Si el usuario no está en este mapa, puede ver todas las sedes.
-const USUARIO_SEDES = {
-  'ypfnordelta': ['nordelta'],
-  'ypfmadero':   ['madero'],
-  'ypfalcorta':   ['alcorta'],
-  'ypfugarte':   ['ugarte']
-};
+// ── SESIÓN ──
+// Ya no hay usuarios/hashes hardcodeados: el login se valida contra
+// BigQuery (tabla credenciales_portales) desde el Apps Script.
+// Estos datos vienen en la respuesta del login y se guardan en sessionStorage
+// solo para no tener que loguearse de nuevo en cada recarga de la pestaña.
+let sessionUsuario         = sessionStorage.getItem('feed_usuario') || null;
+let sessionCliente         = sessionStorage.getItem('feed_cliente') || null;
+let sessionTipoUsuario     = sessionStorage.getItem('feed_tipo')    || null;
+let sessionSedesPermitidas = JSON.parse(sessionStorage.getItem('feed_sedes') || '[]');
 
 function getSedesPermitidas() {
-  return USUARIO_SEDES[sessionUsuario] || ['nordelta', 'madero', 'alcorta', 'ugarte'];
+  return sessionSedesPermitidas.length > 0 ? sessionSedesPermitidas : ['nordelta', 'madero', 'alcorta', 'ugarte'];
 }
 
 // ── ESTADO ──
@@ -661,8 +651,6 @@ let currentSede   = null;
 let orderData     = {};
 let deliveryDates = [];
 let isEditing     = false;
-let sessionUsuario   = sessionStorage.getItem('feed_usuario') || null;
-let sessionHashClave = sessionStorage.getItem('feed_hash')    || null;
 
 // Catálogo activo por sede (cargado desde servidor)
 let catalogoActivo = { nordelta: null, madero: null, alcorta: null, ugarte: null };
@@ -676,43 +664,67 @@ let mermaDias      = [];   // [{ fecha, productos: [{codigo,nombre,cantidadPedid
 let mermaData      = {};   // { fecha: { codigo: cantidadMerma } }
 
 // ════════════════════════════════════════════════
-// LOGIN
+// LOGIN — valida contra BigQuery (credenciales_portales) vía Apps Script
 // ════════════════════════════════════════════════
 async function doLogin() {
   const usuario = document.getElementById('input-usuario').value.trim();
   const clave   = document.getElementById('input-clave').value;
   const errEl   = document.getElementById('login-error');
+  const btn     = document.getElementById('btn-login');
 
   if (!usuario || !clave) { errEl.textContent = 'Completá usuario y contraseña.'; errEl.style.display = 'block'; return; }
   errEl.style.display = 'none';
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span>Ingresando…';
 
-  const encoder = new TextEncoder();
-  const data    = encoder.encode(usuario + ':' + clave + ':' + SALT);
-  const hashBuf = await crypto.subtle.digest('SHA-256', data);
-  const hashHex = Array.from(new Uint8Array(hashBuf)).map(b => b.toString(16).padStart(2,'0')).join('');
+  try {
+    // Content-Type: text/plain evita que el navegador dispare un preflight
+    // CORS que Apps Script no responde bien. El doPost igual parsea el JSON.
+    const res = await fetch(APPS_SCRIPT_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify({ action: 'login', usuario: usuario, password: clave }),
+    });
+    const json = await res.json();
 
-  if (USUARIOS_HASH[usuario] && USUARIOS_HASH[usuario] === hashHex) {
-    sessionUsuario   = usuario;
-    sessionHashClave = hashHex;
-    sessionStorage.setItem('feed_usuario', usuario);
-    sessionStorage.setItem('feed_hash',    hashHex);
-    if (usuario === 'admin') {
-      showAdmin();
+    if (json.ok) {
+      sessionUsuario         = json.usuario;
+      sessionCliente         = json.cliente;
+      sessionTipoUsuario     = json.tipo_usuario;
+      sessionSedesPermitidas = json.sedes_permitidas || [];
+
+      sessionStorage.setItem('feed_usuario', sessionUsuario);
+      sessionStorage.setItem('feed_cliente', sessionCliente || '');
+      sessionStorage.setItem('feed_tipo',    sessionTipoUsuario || '');
+      sessionStorage.setItem('feed_sedes',   JSON.stringify(sessionSedesPermitidas));
+
+      if (sessionTipoUsuario === 'admin') {
+        showAdmin();
+      } else {
+        showApp();
+      }
     } else {
-      showApp();
+      errEl.textContent = 'Usuario o contraseña incorrectos.';
+      errEl.style.display = 'block';
     }
-  } else {
-    errEl.textContent = 'Usuario o contraseña incorrectos.';
+  } catch (e) {
+    errEl.textContent = 'Error de conexión. Intentá nuevamente.';
     errEl.style.display = 'block';
   }
+
+  btn.disabled = false;
+  btn.textContent = 'Ingresar';
 }
 
 document.addEventListener('DOMContentLoaded', () => {
   ['input-usuario','input-clave'].forEach(id => {
     document.getElementById(id).addEventListener('keydown', e => { if (e.key === 'Enter') doLogin(); });
   });
-  if (sessionUsuario && sessionHashClave && USUARIOS_HASH[sessionUsuario] === sessionHashClave) {
-    if (sessionUsuario === 'admin') showAdmin(); else showApp();
+  // Continuidad de sesión dentro de la misma pestaña (no revalida contra el
+  // servidor en cada recarga; se cierra sola al cerrar la pestaña/navegador
+  // porque usa sessionStorage).
+  if (sessionUsuario && sessionTipoUsuario) {
+    if (sessionTipoUsuario === 'admin') showAdmin(); else showApp();
   }
 });
 
@@ -1153,6 +1165,7 @@ async function submitOrder() {
   const payload = {
     action: 'pedido',
     usuario: sessionUsuario,
+    cliente: sessionCliente,
     esEdicion: isEditing,
     sede: SEDE_LABELS[currentSede],
     semana: document.getElementById('week-range').textContent,
@@ -1403,6 +1416,7 @@ async function submitMerma() {
   const payload = {
     action: 'merma',
     usuario: sessionUsuario,
+    cliente: sessionCliente,
     sede: SEDE_LABELS[mermaSede],
     dias: mermaDias.map(dia => ({
       fecha: dia.fecha,
@@ -1492,9 +1506,13 @@ function cancelarMerma() {
 // ════════════════════════════════════════════════
 function cerrarSesion() {
   sessionStorage.removeItem('feed_usuario');
-  sessionStorage.removeItem('feed_hash');
+  sessionStorage.removeItem('feed_cliente');
+  sessionStorage.removeItem('feed_tipo');
+  sessionStorage.removeItem('feed_sedes');
   sessionUsuario = null;
-  sessionHashClave = null;
+  sessionCliente = null;
+  sessionTipoUsuario = null;
+  sessionSedesPermitidas = [];
   // Reset de estados por las dudas de que se vuelva a entrar en la misma sesión de navegador
   currentSede = null; orderData = {}; deliveryDates = []; isEditing = false;
   mermaSede = null; mermaLunes = null; mermaDias = []; mermaData = {};
