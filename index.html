@@ -612,7 +612,7 @@
 // ════════════════════════════════════════════════
 // CONFIGURACIÓN
 // ════════════════════════════════════════════════
-const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwa8kGuMr46Y8H1TrNFZY4SheQ4SdyZeBiG0M0ngZBsSv3reVQ0BAjqqr_bxbWMRV-Skg/exec';
+const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxZFmUkL64yS7Uo_YIUYmtPZsjqIWcxwZXHsdb_UkHKrc3UftL26LYbHzxHi180MkEaeQ/exec';
 
 const PRODUCTS = [
   { code: 'PFEN00001', name: 'Ensalada Caesar', categoria: 'Ensalada' },
@@ -1173,10 +1173,12 @@ async function submitOrder() {
     dias: deliveryDates.map(d => ({
       fecha: isoDate(d),
       dia: DAY_NAMES[d.getDay()],
+      // Se manda TODO el catálogo activo con su cantidad real (incluido 0),
+      // para que el backend pueda apagar por fecha+código+sede exacto
+      // incluso los productos que el cliente bajó a 0 en esta edición.
       productos: getActiveProducts()
-        .map(p => ({ codigo: p.code, nombre: p.name, cantidad: (orderData[isoDate(d)] || {})[p.code] || 0 }))
-        .filter(p => p.cantidad > 0),
-    })).filter(d => d.productos.length > 0),
+        .map(p => ({ codigo: p.code, nombre: p.name, cantidad: (orderData[isoDate(d)] || {})[p.code] || 0 })),
+    })),
   };
 
   try {
