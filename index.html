@@ -147,6 +147,9 @@
     .qty-input:focus { outline: none; background: #FFFEF8; }
     .qty-wrap.merma-qty .qty-btn { background: #FDF6E3; }
     .qty-wrap.merma-qty .qty-input:focus { background: #FFFCF2; }
+    tr.ajuste-locked td { opacity: 0.4; }
+    tr.ajuste-locked .qty-btn, tr.ajuste-locked .qty-input { pointer-events: none; background: var(--cream-dk); }
+    .ajuste-locked-note { font-size: 0.68rem; color: var(--err); font-style: italic; margin-top: 2px; display: block; }
 
     /* RESUMEN */
     .summary-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(155px, 1fr)); gap: 10px; margin-bottom: 26px; }
@@ -449,10 +452,10 @@
     <div class="card-label">¿Qué querés hacer?</div>
     <h2>Seleccioná una opción</h2>
     <div class="modo-grid">
-      <div class="modo-card" onclick="irAPedido()">
+      <div class="modo-card" onclick="irAGestion()">
         <div class="modo-icon">📦</div>
-        <div class="modo-name">Cargar / editar pedido</div>
-        <div class="modo-desc">Pedido semanal por sede y día.</div>
+        <div class="modo-name">Gestión de pedidos</div>
+        <div class="modo-desc">Realizar un pedido nuevo o ajustar uno ya confirmado.</div>
       </div>
       <div class="modo-card" onclick="irAMerma()">
         <div class="modo-icon">🗑️</div>
@@ -462,9 +465,28 @@
     </div>
   </div>
 
+  <!-- PASO 0.5: submenu de gestión de pedidos -->
+  <div class="card fade-in" id="step-gestion" style="display:none">
+    <button class="btn-volver-modo" onclick="volverAModo()">← Volver</button>
+    <div class="card-label">Gestión de pedidos</div>
+    <h2>Seleccioná una opción</h2>
+    <div class="modo-grid">
+      <div class="modo-card" onclick="irAPedido()">
+        <div class="modo-icon">🆕</div>
+        <div class="modo-name">Realizar pedido</div>
+        <div class="modo-desc">Cargar o editar el pedido de la semana abierta.</div>
+      </div>
+      <div class="modo-card" onclick="irAAjuste()">
+        <div class="modo-icon">✎</div>
+        <div class="modo-name">Ajuste de pedido</div>
+        <div class="modo-desc">Modificar el pedido de semanas ya confirmadas, según los plazos de cada producto.</div>
+      </div>
+    </div>
+  </div>
+
   <!-- PASO 1a: sede + pedido (flujo existente) -->
   <div class="card fade-in" id="step-sede" style="display:none">
-    <button class="btn-volver-modo" onclick="volverAModo()">← Volver</button>
+    <button class="btn-volver-modo" onclick="volverAGestion()">← Volver</button>
     <div class="card-label"> </div>
     <h2>Seleccioná la sede y cargá el pedido</h2>
     <div class="sede-grid" id="sede-grid">
@@ -582,6 +604,56 @@
   </div>
 </div>
 
+<!-- AJUSTE: sede -->
+<div class="container" id="ajuste-container" style="display:none">
+  <div class="card fade-in" id="step-ajuste-sede" style="display:none">
+    <button class="btn-volver-modo" onclick="volverAGestion()">← Volver</button>
+    <div class="card-label"> </div>
+    <h2>Ajuste de pedido — Seleccioná la sede</h2>
+    <div class="sede-grid" id="ajuste-sede-grid"></div>
+  </div>
+
+  <!-- AJUSTE: semana -->
+  <div class="card fade-in" id="step-ajuste-semana" style="display:none">
+    <button class="btn-volver-modo" onclick="volverASedeAjuste()">← Volver</button>
+    <div class="card-label">Ajuste de pedido —</div>
+    <h2 id="ajuste-sede-title">—</h2>
+    <div class="semana-grid" id="ajuste-semana-grid"></div>
+  </div>
+
+  <!-- AJUSTE: carga -->
+  <div id="ajuste-section">
+    <div class="card fade-in">
+      <button class="btn-volver-modo" onclick="volverASemanaAjuste()">← Volver</button>
+      <div class="order-sede-label">
+        <span class="card-label" style="margin-bottom:0">Ajuste —</span>
+        <span id="ajuste-sede-header" style="font-family:'Lato',sans-serif; font-weight:900; letter-spacing:-0.5px; font-size:1.05rem;"></span>
+      </div>
+      <div style="height:18px"></div>
+      <div class="edit-strip visible">
+        <span class="di">ℹ️</span>
+        <span>Los productos grisados ya vencieron su plazo de ajuste y no se pueden modificar. Platos y Sopa: hasta 48hs hábiles antes de la entrega, 10hs (excepto Orecchiette). Bowls y Ensaladas: solo jueves/viernes, hasta el miércoles previo, 10hs.</span>
+      </div>
+      <div class="day-tabs" id="ajuste-day-tabs"></div>
+      <div id="ajuste-day-panels"></div>
+    </div>
+    <div class="card fade-in">
+      <div class="card-label">Resumen del ajuste</div>
+      <h2 id="ajuste-summary-title" style="margin-bottom:18px">—</h2>
+      <div class="summary-grid" id="ajuste-summary-grid"></div>
+      <div class="divider"></div>
+      <div class="submit-row">
+        <p class="submit-note">Al confirmar, se aplican los cambios permitidos y se envía un mail con el detalle de lo ajustado.</p>
+        <div style="display:flex; gap:12px; flex-wrap:wrap">
+          <button class="btn-cancel" onclick="cancelarAjuste()">Cancelar y volver al inicio</button>
+          <button class="btn-confirm" id="btn-submit-ajuste" onclick="submitAjuste()">Confirmar ajuste</button>
+        </div>
+      </div>
+      <div class="err-strip" id="ajuste-error-msg"></div>
+    </div>
+  </div>
+</div>
+
 <div id="success-screen">
   <div class="success-icon">✓</div>
   <h2 id="success-title">¡Pedido confirmado!</h2>
@@ -600,7 +672,7 @@
 // ════════════════════════════════════════════════
 // CONFIGURACIÓN
 // ════════════════════════════════════════════════
-const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxZFmUkL64yS7Uo_YIUYmtPZsjqIWcxwZXHsdb_UkHKrc3UftL26LYbHzxHi180MkEaeQ/exec';
+const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxO0yYj3rfTiG4LyzkPAnn13xYiFwYVV4Zi1pp-Z2fy-WhUJhEInAE_8wgMs0t2Hsm6ew/exec';
 
 const PRODUCTS = [
   { code: 'PFEN00001', name: 'Ensalada Caesar', categoria: 'Ensalada' },
@@ -650,6 +722,14 @@ let mermaSede      = null;
 let mermaLunes     = null; // iso del lunes de la semana elegida
 let mermaDias      = [];   // [{ fecha, productos: [{codigo,nombre,cantidadPedida,merma}] }]
 let mermaData      = {};   // { fecha: { codigo: cantidadMerma } }
+
+// ── ESTADO AJUSTE DE PEDIDO ──
+let ajusteSede       = null;
+let ajusteLunes      = null;
+let ajusteDias       = [];   // deliveryDates de la semana elegida (Date[])
+let ajusteData       = {};   // { fecha: { codigo: cantidad } }
+let ajusteOriginal   = {};   // { fecha: { codigo: cantidadOriginal } } — para el diff al enviar
+let ajusteFeriados   = new Set();
 
 // ════════════════════════════════════════════════
 // LOGIN — valida contra BigQuery (credenciales_portales) vía Apps Script
@@ -866,11 +946,19 @@ function fmtDate(d) { return d.toLocaleDateString('es-AR', { day: 'numeric', mon
 function isoDate(d) { return d.toISOString().split('T')[0]; }
 
 // ════════════════════════════════════════════════
-// NAVEGACIÓN ENTRE MODOS (pedido / merma)
+// NAVEGACIÓN ENTRE MODOS (pedido / merma / ajuste)
 // ════════════════════════════════════════════════
 function ocultarTodosLosPasos() {
-  ['step-modo','step-sede','order-section','step-merma-sede','step-merma-semana','merma-section']
+  ['step-modo','step-gestion','step-sede','order-section','step-merma-sede','step-merma-semana','merma-section',
+   'step-ajuste-sede','step-ajuste-semana','ajuste-section']
     .forEach(id => { document.getElementById(id).style.display = 'none'; });
+  document.getElementById('app-container').style.display    = 'block';
+  document.getElementById('ajuste-container').style.display = 'none';
+}
+
+function irAGestion() {
+  ocultarTodosLosPasos();
+  document.getElementById('step-gestion').style.display = 'block';
 }
 
 function irAPedido() {
@@ -903,9 +991,43 @@ function irAMerma() {
   document.getElementById('step-merma-sede').style.display = 'block';
 }
 
+function irAAjuste() {
+  document.getElementById('app-container').style.display    = 'none';
+  document.getElementById('ajuste-container').style.display = 'block';
+  ['step-modo','step-gestion','step-sede','order-section','step-merma-sede','step-merma-semana','merma-section']
+    .forEach(id => { document.getElementById(id).style.display = 'none'; });
+  ['step-ajuste-sede','step-ajuste-semana','ajuste-section']
+    .forEach(id => { document.getElementById(id).style.display = 'none'; });
+
+  document.getElementById('hero-title').innerHTML = 'Ajustá un pedido<br>ya confirmado';
+  document.getElementById('hero-desc').textContent = 'Cada producto tiene su propio plazo de ajuste según su categoría. Los que ya vencieron aparecen bloqueados.';
+
+  const permitidas = getSedesPermitidas();
+  if (permitidas.length === 1) {
+    seleccionarSedeAjuste(permitidas[0]);
+    return;
+  }
+
+  const grid = document.getElementById('ajuste-sede-grid');
+  grid.innerHTML = '';
+  permitidas.forEach(s => {
+    const div = document.createElement('div');
+    div.className = 'sede-card';
+    div.onclick = () => seleccionarSedeAjuste(s);
+    div.innerHTML = `<div class="sede-name">${SEDE_LABELS[s]}</div>`;
+    grid.appendChild(div);
+  });
+  document.getElementById('step-ajuste-sede').style.display = 'block';
+}
+
 function volverAModo() {
   ocultarTodosLosPasos();
   document.getElementById('step-modo').style.display = 'block';
+}
+
+function volverAGestion() {
+  ocultarTodosLosPasos();
+  document.getElementById('step-gestion').style.display = 'block';
 }
 
 function volverASedeMerma() {
@@ -918,6 +1040,22 @@ function volverASedeMerma() {
 function volverASemanaMerma() {
   ocultarTodosLosPasos();
   document.getElementById('step-merma-semana').style.display = 'block';
+}
+
+function volverASedeAjuste() {
+  document.getElementById('app-container').style.display    = 'none';
+  document.getElementById('ajuste-container').style.display = 'block';
+  ['step-ajuste-sede','step-ajuste-semana','ajuste-section'].forEach(id => { document.getElementById(id).style.display = 'none'; });
+  const permitidas = getSedesPermitidas();
+  if (permitidas.length === 1) { volverAGestion(); return; }
+  document.getElementById('step-ajuste-sede').style.display = 'block';
+}
+
+function volverASemanaAjuste() {
+  document.getElementById('app-container').style.display    = 'none';
+  document.getElementById('ajuste-container').style.display = 'block';
+  ['step-ajuste-sede','step-ajuste-semana','ajuste-section'].forEach(id => { document.getElementById(id).style.display = 'none'; });
+  document.getElementById('step-ajuste-semana').style.display = 'block';
 }
 
 // ════════════════════════════════════════════════
@@ -1440,11 +1578,359 @@ function onMermaSuccess() {
 }
 
 // ════════════════════════════════════════════════
+// AJUSTE DE PEDIDO — HELPERS DE FECHA/CORTE (mismo criterio que el backend)
+// ════════════════════════════════════════════════
+function ahoraAR() {
+  return new Date(new Date().toLocaleString('en-US', { timeZone: 'America/Argentina/Buenos_Aires' }));
+}
+function getCategoriaPorCodigo(codigo) {
+  const p = PRODUCTS.find(p => p.code === codigo);
+  return p ? p.categoria : null;
+}
+function esDiaHabilJS(fecha) {
+  const dow = fecha.getDay();
+  if (dow === 0 || dow === 6) return false;
+  return !ajusteFeriados.has(isoDate(fecha));
+}
+function restarDiasHabilesJS(fecha, n) {
+  const d = new Date(fecha);
+  let restantes = n;
+  while (restantes > 0) {
+    d.setDate(d.getDate() - 1);
+    if (esDiaHabilJS(d)) restantes--;
+  }
+  return d;
+}
+function getCutoffAjusteJS(fechaEntregaIso, categoria, codigo) {
+  if (codigo === 'PFPW00270') return null;
+  const fechaEntrega = new Date(fechaEntregaIso + 'T00:00:00');
+
+  if (categoria === 'Platos' || categoria === 'Sopa') {
+    const diaCorte = restarDiasHabilesJS(fechaEntrega, 2);
+    diaCorte.setHours(10, 0, 0, 0);
+    return diaCorte;
+  }
+  if (categoria === 'Bowl' || categoria === 'Ensalada') {
+    const dow = fechaEntrega.getDay();
+    if (dow !== 4 && dow !== 5) return null;
+    const diasARestar = (dow === 4) ? 1 : 2;
+    const diaCorte = new Date(fechaEntrega);
+    diaCorte.setDate(fechaEntrega.getDate() - diasARestar);
+    diaCorte.setHours(10, 0, 0, 0);
+    return diaCorte;
+  }
+  return null;
+}
+function esAjustableJS(fechaEntregaIso, categoria, codigo) {
+  const cutoff = getCutoffAjusteJS(fechaEntregaIso, categoria, codigo);
+  if (!cutoff) return false;
+  return ahoraAR() < cutoff;
+}
+function motivoNoAjustable(codigo, categoria) {
+  if (codigo === 'PFPW00270') return 'Este producto no admite ajustes.';
+  if (categoria === 'Platos' || categoria === 'Sopa') return 'Venció el plazo (48hs hábiles antes, 10hs).';
+  if (categoria === 'Bowl' || categoria === 'Ensalada') return 'Solo se ajusta jueves/viernes hasta el miércoles previo, 10hs.';
+  return 'No ajustable.';
+}
+
+// ════════════════════════════════════════════════
+// AJUSTE — SELECCIÓN DE SEDE Y CÁLCULO DE SEMANAS
+// ════════════════════════════════════════════════
+async function seleccionarSedeAjuste(sede) {
+  ajusteSede = sede;
+  document.getElementById('ajuste-sede-title').textContent = SEDE_LABELS[sede];
+
+  try {
+    const url = APPS_SCRIPT_URL + '?action=getFeriados&sede=' + encodeURIComponent(SEDE_LABELS[sede]);
+    const res  = await fetch(url);
+    const json = await res.json();
+    ajusteFeriados = new Set(json.feriados || []);
+  } catch (e) {
+    ajusteFeriados = new Set();
+  }
+
+  ['step-ajuste-sede','step-ajuste-semana','ajuste-section'].forEach(id => { document.getElementById(id).style.display = 'none'; });
+  const grid = document.getElementById('ajuste-semana-grid');
+  grid.innerHTML = '';
+
+  // Las 2 semanas ajustables son siempre las 2 anteriores a la semana abierta para pedido nuevo
+  const semana2Monday = new Date(window._weekMonday); semana2Monday.setDate(semana2Monday.getDate() - 7);  // "la que viene"
+  const semana1Monday = new Date(window._weekMonday); semana1Monday.setDate(semana1Monday.getDate() - 14); // "en curso"
+
+  [semana1Monday, semana2Monday].forEach(mon => {
+    const dom = new Date(mon); dom.setDate(mon.getDate() + 6);
+    const etiqueta = 'Semana del ' + fmtDate(mon) + ' al ' + fmtDate(dom);
+    const div = document.createElement('div');
+    div.className = 'semana-card';
+    div.onclick = () => seleccionarSemanaAjuste(isoDate(mon), etiqueta);
+    div.innerHTML = `<span class="semana-label">${etiqueta}</span><span class="semana-arrow">→</span>`;
+    grid.appendChild(div);
+  });
+
+  document.getElementById('step-ajuste-semana').style.display = 'block';
+}
+
+// ════════════════════════════════════════════════
+// AJUSTE — CARGAR PEDIDO DE LA SEMANA ELEGIDA
+// ════════════════════════════════════════════════
+async function seleccionarSemanaAjuste(lunesIso, etiqueta) {
+  ajusteLunes    = lunesIso;
+  ajusteData     = {};
+  ajusteOriginal = {};
+
+  ['step-ajuste-sede','step-ajuste-semana'].forEach(id => { document.getElementById(id).style.display = 'none'; });
+  document.getElementById('ajuste-section').style.display = 'block';
+  document.getElementById('ajuste-sede-header').textContent = SEDE_LABELS[ajusteSede] + ' — ' + etiqueta;
+  document.getElementById('ajuste-summary-title').textContent = SEDE_LABELS[ajusteSede];
+  document.getElementById('ajuste-day-tabs').innerHTML = '';
+  document.getElementById('ajuste-day-panels').innerHTML = '<p style="color:var(--ink-soft);font-size:0.85rem">Cargando pedido de la semana…</p>';
+  hideAjusteError();
+
+  try {
+    const url = APPS_SCRIPT_URL + '?action=getPedidoParaAjuste'
+      + '&usuario=' + encodeURIComponent(sessionUsuario)
+      + '&sede='    + encodeURIComponent(SEDE_LABELS[ajusteSede])
+      + '&lunes='   + encodeURIComponent(lunesIso);
+    const res  = await fetch(url);
+    const json = await res.json();
+    const diasServidor = json.dias || [];
+
+    // Armar deliveryDates a partir de los días de entrega de la sede para esta semana
+    const monday = new Date(lunesIso + 'T00:00:00');
+    const allowedDows = SEDE_DAYS[ajusteSede];
+    ajusteDias = [];
+    for (let i = 0; i < 7; i++) {
+      const d = new Date(monday);
+      d.setDate(monday.getDate() + i);
+      if (allowedDows.includes(d.getDay())) ajusteDias.push(d);
+    }
+
+    const activeProds = getActiveProductsSede(ajusteSede);
+    ajusteDias.forEach(d => {
+      const iso = isoDate(d);
+      ajusteData[iso]     = {};
+      ajusteOriginal[iso] = {};
+      activeProds.forEach(p => { ajusteData[iso][p.code] = 0; ajusteOriginal[iso][p.code] = 0; });
+    });
+    diasServidor.forEach(dia => {
+      dia.productos.forEach(prod => {
+        if (ajusteData[dia.fecha]) {
+          ajusteData[dia.fecha][prod.codigo]     = prod.cantidad;
+          ajusteOriginal[dia.fecha][prod.codigo] = prod.cantidad;
+        }
+      });
+    });
+
+    buildAjusteUI();
+  } catch (e) {
+    document.getElementById('ajuste-day-panels').innerHTML = '<p style="color:var(--err);font-size:0.85rem">Error al cargar el pedido de esta semana.</p>';
+  }
+
+  document.getElementById('ajuste-section').scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+// Igual que getActiveProducts() pero para una sede arbitraria (no depende de currentSede)
+function getActiveProductsSede(sede) {
+  const activos = catalogoActivo[sede] || PRODUCTS.map(p => p.code);
+  return PRODUCTS.filter(p => activos.includes(p.code));
+}
+
+// ════════════════════════════════════════════════
+// AJUSTE — CONSTRUIR UI POR DÍA (con celdas bloqueadas según corte)
+// ════════════════════════════════════════════════
+function buildAjusteUI() {
+  const tabsEl   = document.getElementById('ajuste-day-tabs');
+  const panelsEl = document.getElementById('ajuste-day-panels');
+  tabsEl.innerHTML   = '';
+  panelsEl.innerHTML = '';
+
+  if (ajusteDias.length === 0) {
+    panelsEl.innerHTML = '<p style="color:var(--ink-soft);font-size:0.85rem">Esta sede no tiene días de entrega en esta semana.</p>';
+    return;
+  }
+
+  const activeProds = getActiveProductsSede(ajusteSede);
+
+  ajusteDias.forEach((d, idx) => {
+    const iso = isoDate(d);
+    const dow = d.getDay();
+
+    const tab = document.createElement('button');
+    tab.className = 'day-tab' + (idx === 0 ? ' active' : '');
+    tab.id = 'atab-' + iso;
+    tab.innerHTML = DAY_SHORT[dow] + ' ' + d.getDate() + ' <span class="dot" id="adot-' + iso + '"></span>';
+    tab.onclick = () => switchAjusteDay(iso);
+    tabsEl.appendChild(tab);
+
+    const panel = document.createElement('div');
+    panel.className = 'day-panel' + (idx === 0 ? ' active' : '');
+    panel.id = 'apanel-' + iso;
+
+    const rows = activeProds.map(p => {
+      const ajustable = esAjustableJS(iso, p.categoria, p.code);
+      const cant = (ajusteData[iso] || {})[p.code] || 0;
+      return `
+      <tr class="${ajustable ? '' : 'ajuste-locked'}">
+        <td class="code"><span class="cat-chip cat-${p.categoria}">${p.code}</span></td>
+        <td>
+          ${p.name}
+          ${ajustable ? '' : `<span class="ajuste-locked-note">🔒 ${motivoNoAjustable(p.code, p.categoria)}</span>`}
+        </td>
+        <td>
+          <div class="qty-wrap">
+            <button class="qty-btn" onclick="changeAjusteQty('${iso}','${p.code}',-1)" ${ajustable ? '' : 'tabindex="-1"'}>−</button>
+            <input class="qty-input" type="number" min="0" value="${cant}"
+              id="aqty-${iso}-${p.code}"
+              ${ajustable ? '' : 'disabled'}
+              oninput="setAjusteQty('${iso}','${p.code}',this.value)"
+              onchange="setAjusteQty('${iso}','${p.code}',this.value)" />
+            <button class="qty-btn" onclick="changeAjusteQty('${iso}','${p.code}',1)" ${ajustable ? '' : 'tabindex="-1"'}>+</button>
+          </div>
+        </td>
+      </tr>`;
+    }).join('');
+
+    panel.innerHTML = `
+      <div class="day-header">
+        <h3>${DAY_NAMES[dow]}</h3>
+        <span class="date-str">${d.toLocaleDateString('es-AR',{day:'numeric',month:'long',year:'numeric'})}</span>
+      </div>
+      <table class="ptable">
+        <thead><tr><th>Código</th><th>Producto</th><th>Cantidad</th></tr></thead>
+        <tbody>${rows}</tbody>
+      </table>`;
+    panelsEl.appendChild(panel);
+
+    refreshAjusteDot(iso);
+  });
+
+  updateAjusteSummary();
+}
+
+function switchAjusteDay(iso) {
+  document.querySelectorAll('#ajuste-day-tabs .day-tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('#ajuste-day-panels .day-panel').forEach(p => p.classList.remove('active'));
+  document.getElementById('atab-' + iso).classList.add('active');
+  document.getElementById('apanel-' + iso).classList.add('active');
+}
+
+// ════════════════════════════════════════════════
+// AJUSTE — CANTIDADES (solo afecta si es ajustable; los bloqueados están disabled)
+// ════════════════════════════════════════════════
+function changeAjusteQty(iso, code, delta) {
+  const categoria = getCategoriaPorCodigo(code);
+  if (!esAjustableJS(iso, categoria, code)) return;
+  const next = Math.max(0, (ajusteData[iso][code] || 0) + delta);
+  ajusteData[iso][code] = next;
+  document.getElementById('aqty-' + iso + '-' + code).value = next;
+  refreshAjusteDot(iso); updateAjusteSummary();
+}
+function setAjusteQty(iso, code, val) {
+  const categoria = getCategoriaPorCodigo(code);
+  if (!esAjustableJS(iso, categoria, code)) return;
+  const n = Math.max(0, parseInt(val) || 0);
+  ajusteData[iso][code] = n;
+  document.getElementById('aqty-' + iso + '-' + code).value = n;
+  refreshAjusteDot(iso); updateAjusteSummary();
+}
+function refreshAjusteDot(iso) {
+  const original = ajusteOriginal[iso] || {};
+  const actual    = ajusteData[iso] || {};
+  const cambio = Object.keys(actual).some(c => (actual[c] || 0) !== (original[c] || 0));
+  const dot = document.getElementById('adot-' + iso);
+  if (dot) dot.classList.toggle('visible', cambio);
+}
+
+// ════════════════════════════════════════════════
+// AJUSTE — RESUMEN (solo muestra lo que efectivamente cambió)
+// ════════════════════════════════════════════════
+function updateAjusteSummary() {
+  const grid = document.getElementById('ajuste-summary-grid');
+  if (!grid) return;
+  grid.innerHTML = '';
+  const activeProds = getActiveProductsSede(ajusteSede);
+  ajusteDias.forEach(d => {
+    const iso = isoDate(d);
+    const dow = d.getDay();
+    const original = ajusteOriginal[iso] || {};
+    const actual    = ajusteData[iso] || {};
+    const cambios = activeProds.filter(p => (actual[p.code] || 0) !== (original[p.code] || 0));
+    const div = document.createElement('div');
+    div.className = 's-day';
+    let html = '<div class="s-day-name">' + DAY_SHORT[dow] + ' ' + d.getDate() + '</div>';
+    if (cambios.length === 0) { html += '<div class="s-empty">Sin cambios</div>'; }
+    else { cambios.forEach(p => { html += `<div class="s-item">${p.name}: ${original[p.code]||0} → ${actual[p.code]||0}</div>`; }); }
+    div.innerHTML = html;
+    grid.appendChild(div);
+  });
+}
+
+// ════════════════════════════════════════════════
+// AJUSTE — SUBMIT
+// ════════════════════════════════════════════════
+async function submitAjuste() {
+  const activeProds = getActiveProductsSede(ajusteSede);
+  const dias = [];
+  let huboCambios = false;
+
+  ajusteDias.forEach(d => {
+    const iso = isoDate(d);
+    const original = ajusteOriginal[iso] || {};
+    const actual    = ajusteData[iso] || {};
+    const productos = activeProds
+      .filter(p => esAjustableJS(iso, p.categoria, p.code)) // solo se envían los ajustables (los bloqueados no se tocan)
+      .map(p => {
+        if ((actual[p.code] || 0) !== (original[p.code] || 0)) huboCambios = true;
+        return { codigo: p.code, nombre: p.name, categoria: p.categoria, cantidad: actual[p.code] || 0, cantidadAnterior: original[p.code] || 0 };
+      });
+    if (productos.length > 0) dias.push({ fecha: iso, dia: DAY_NAMES[d.getDay()], productos });
+  });
+
+  if (!huboCambios) { showAjusteError('No hiciste ningún cambio respecto del pedido actual.'); return; }
+
+  const btn = document.getElementById('btn-submit-ajuste');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span>Enviando…';
+  hideAjusteError();
+
+  const payload = {
+    action: 'ajustePedido',
+    usuario: sessionUsuario,
+    cliente: sessionCliente,
+    esEdicion: true,
+    sede: SEDE_LABELS[ajusteSede],
+    semana: document.getElementById('ajuste-sede-header').textContent,
+    dias: dias,
+  };
+
+  try {
+    await fetch(APPS_SCRIPT_URL, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+    onAjusteSuccess();
+  } catch (err) {
+    showAjusteError('Hubo un error al enviar el ajuste. Intentá nuevamente o escribinos a mariano@somosfeed.com.ar');
+    btn.disabled = false;
+    btn.innerHTML = 'Confirmar ajuste';
+  }
+}
+
+function onAjusteSuccess() {
+  document.getElementById('success-title').textContent = '¡Ajuste registrado!';
+  document.getElementById('success-msg').textContent   = 'Los cambios permitidos fueron aplicados. Te llegará un mail con el detalle de lo ajustado (y de lo que no pudo ajustarse, si corresponde).';
+  document.getElementById('app-container').style.display    = 'none';
+  document.getElementById('ajuste-container').style.display = 'none';
+  document.getElementById('success-screen').style.display   = 'block';
+  document.getElementById('success-sede-label').textContent = SEDE_LABELS[ajusteSede];
+  window._successFrom = 'ajuste';
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+// ════════════════════════════════════════════════
 // VOLVER AL INICIO
 // ════════════════════════════════════════════════
 function backToHome() {
   document.getElementById('success-screen').style.display = 'none';
   document.getElementById('app-container').style.display  = 'block';
+  document.getElementById('ajuste-container').style.display = 'none';
 
   // Reset pedido
   currentSede = null; orderData = {}; deliveryDates = []; isEditing = false;
@@ -1455,6 +1941,11 @@ function backToHome() {
   mermaSede = null; mermaLunes = null; mermaDias = []; mermaData = {};
   const btnM = document.getElementById('btn-submit-merma');
   btnM.disabled = false; btnM.textContent = 'Confirmar merma';
+
+  // Reset ajuste
+  ajusteSede = null; ajusteLunes = null; ajusteDias = []; ajusteData = {}; ajusteOriginal = {};
+  const btnA = document.getElementById('btn-submit-ajuste');
+  btnA.disabled = false; btnA.textContent = 'Confirmar ajuste';
 
   document.getElementById('hero-title').innerHTML = 'Hacé tu pedido<br>para la próxima semana';
   document.getElementById('hero-desc').textContent = 'Seleccioná una sede, completá el pedido por día y confirmalo. Los pedidos se pueden hacer hasta las 15hs de cada Lunes.';
@@ -1469,9 +1960,11 @@ function showError(msg) { const el = document.getElementById('error-msg'); el.te
 function hideError()    { document.getElementById('error-msg').style.display = 'none'; }
 function showMermaError(msg) { const el = document.getElementById('merma-error-msg'); el.textContent = msg; el.style.display = 'block'; }
 function hideMermaError()    { document.getElementById('merma-error-msg').style.display = 'none'; }
+function showAjusteError(msg) { const el = document.getElementById('ajuste-error-msg'); el.textContent = msg; el.style.display = 'block'; }
+function hideAjusteError()    { document.getElementById('ajuste-error-msg').style.display = 'none'; }
 
 // ════════════════════════════════════════════════
-// CANCELAR (pedido / merma) — vuelve al inicio sin guardar nada
+// CANCELAR (pedido / merma / ajuste) — vuelve al inicio sin guardar nada
 // ════════════════════════════════════════════════
 function cancelarPedido() {
   currentSede = null; orderData = {}; deliveryDates = []; isEditing = false;
@@ -1487,6 +1980,17 @@ function cancelarMerma() {
   const btnM = document.getElementById('btn-submit-merma');
   btnM.disabled = false; btnM.textContent = 'Confirmar merma';
   hideMermaError();
+  volverAModo();
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function cancelarAjuste() {
+  ajusteSede = null; ajusteLunes = null; ajusteDias = []; ajusteData = {}; ajusteOriginal = {};
+  const btnA = document.getElementById('btn-submit-ajuste');
+  btnA.disabled = false; btnA.textContent = 'Confirmar ajuste';
+  hideAjusteError();
+  document.getElementById('app-container').style.display    = 'block';
+  document.getElementById('ajuste-container').style.display = 'none';
   volverAModo();
   window.scrollTo({ top: 0, behavior: 'smooth' });
 }
