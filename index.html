@@ -709,6 +709,7 @@ function getSedesPermitidas() {
 // ── ESTADO ──
 let currentSede   = null;
 let orderData     = {};
+let orderOriginal = {}; // valores originales al abrir la edición, para mandar solo lo que cambió
 let deliveryDates = [];
 let isEditing     = false;
 
@@ -1155,8 +1156,9 @@ function buildDayUI() {
     d.setDate(monday.getDate() + i);
     if (allowedDows.includes(d.getDay())) {
       deliveryDates.push(d);
-      orderData[isoDate(d)] = {};
-      activeProds.forEach(p => { orderData[isoDate(d)][p.code] = 0; });
+      orderData[isoDate(d)]     = {};
+      orderOriginal[isoDate(d)] = {};
+      activeProds.forEach(p => { orderData[isoDate(d)][p.code] = 0; orderOriginal[isoDate(d)][p.code] = 0; });
     }
   }
 
@@ -1218,6 +1220,7 @@ function buildDayUI() {
         if (prod.cantidad > 0) {
           const input = document.getElementById('qty-' + dia.fecha + '-' + prod.codigo);
           if (input) { input.value = prod.cantidad; if (orderData[dia.fecha]) orderData[dia.fecha][prod.codigo] = prod.cantidad; }
+          if (orderOriginal[dia.fecha]) orderOriginal[dia.fecha][prod.codigo] = prod.cantidad;
           refreshDot(dia.fecha);
         }
       });
@@ -1283,6 +1286,24 @@ async function submitOrder() {
   const total = deliveryDates.reduce((sum, d) => sum + Object.values(orderData[isoDate(d)] || {}).reduce((s,q) => s+q, 0), 0);
   if (total === 0) { showError('El pedido está vacío. Ingresá al menos un producto antes de confirmar.'); return; }
 
+  // Armar el payload SOLO con los productos que cambiaron respecto del pedido
+  // original cargado (así el backend no toca filas que no se modificaron).
+  const activeProds = getActiveProducts();
+  const diasPayload = deliveryDates.map(d => {
+    const iso = isoDate(d);
+    const actual   = orderData[iso] || {};
+    const original = orderOriginal[iso] || {};
+    const productos = activeProds
+      .filter(p => (actual[p.code] || 0) !== (original[p.code] || 0))
+      .map(p => ({ codigo: p.code, nombre: p.name, cantidad: actual[p.code] || 0 }));
+    return { fecha: iso, dia: DAY_NAMES[d.getDay()], productos };
+  }).filter(d => d.productos.length > 0);
+
+  if (isEditing && diasPayload.length === 0) {
+    showError('No hiciste ningún cambio respecto del pedido actual.');
+    return;
+  }
+
   const btn = document.getElementById('btn-submit');
   btn.disabled = true;
   btn.innerHTML = '<span class="spinner"></span>Enviando…';
@@ -1296,15 +1317,7 @@ async function submitOrder() {
     sede: SEDE_LABELS[currentSede],
     semana: document.getElementById('week-range').textContent,
     timestamp: new Date().toISOString(),
-    dias: deliveryDates.map(d => ({
-      fecha: isoDate(d),
-      dia: DAY_NAMES[d.getDay()],
-      // Se manda TODO el catálogo activo con su cantidad real (incluido 0),
-      // para que el backend pueda apagar por fecha+código+sede exacto
-      // incluso los productos que el cliente bajó a 0 en esta edición.
-      productos: getActiveProducts()
-        .map(p => ({ codigo: p.code, nombre: p.name, cantidad: (orderData[isoDate(d)] || {})[p.code] || 0 })),
-    })),
+    dias: diasPayload,
   };
 
   try {
@@ -1871,22 +1884,19 @@ function updateAjusteSummary() {
 async function submitAjuste() {
   const activeProds = getActiveProductsSede(ajusteSede);
   const dias = [];
-  let huboCambios = false;
 
   ajusteDias.forEach(d => {
     const iso = isoDate(d);
     const original = ajusteOriginal[iso] || {};
     const actual    = ajusteData[iso] || {};
     const productos = activeProds
-      .filter(p => esAjustableJS(iso, p.categoria, p.code)) // solo se envían los ajustables (los bloqueados no se tocan)
-      .map(p => {
-        if ((actual[p.code] || 0) !== (original[p.code] || 0)) huboCambios = true;
-        return { codigo: p.code, nombre: p.name, categoria: p.categoria, cantidad: actual[p.code] || 0, cantidadAnterior: original[p.code] || 0 };
-      });
+      .filter(p => esAjustableJS(iso, p.categoria, p.code)) // solo se pueden tocar los ajustables
+      .filter(p => (actual[p.code] || 0) !== (original[p.code] || 0)) // y solo si realmente cambiaron
+      .map(p => ({ codigo: p.code, nombre: p.name, categoria: p.categoria, cantidad: actual[p.code] || 0, cantidadAnterior: original[p.code] || 0 }));
     if (productos.length > 0) dias.push({ fecha: iso, dia: DAY_NAMES[d.getDay()], productos });
   });
 
-  if (!huboCambios) { showAjusteError('No hiciste ningún cambio respecto del pedido actual.'); return; }
+  if (dias.length === 0) { showAjusteError('No hiciste ningún cambio respecto del pedido actual.'); return; }
 
   const btn = document.getElementById('btn-submit-ajuste');
   btn.disabled = true;
@@ -1933,7 +1943,7 @@ function backToHome() {
   document.getElementById('ajuste-container').style.display = 'none';
 
   // Reset pedido
-  currentSede = null; orderData = {}; deliveryDates = []; isEditing = false;
+  currentSede = null; orderData = {}; orderOriginal = {}; deliveryDates = []; isEditing = false;
   const btn = document.getElementById('btn-submit');
   btn.disabled = false; btn.textContent = 'Confirmar pedido';
 
@@ -1967,7 +1977,7 @@ function hideAjusteError()    { document.getElementById('ajuste-error-msg').styl
 // CANCELAR (pedido / merma / ajuste) — vuelve al inicio sin guardar nada
 // ════════════════════════════════════════════════
 function cancelarPedido() {
-  currentSede = null; orderData = {}; deliveryDates = []; isEditing = false;
+  currentSede = null; orderData = {}; orderOriginal = {}; deliveryDates = []; isEditing = false;
   const btn = document.getElementById('btn-submit');
   btn.disabled = false; btn.textContent = 'Confirmar pedido';
   hideError();
@@ -2008,7 +2018,7 @@ function cerrarSesion() {
   sessionTipoUsuario = null;
   sessionSedesPermitidas = [];
   // Reset de estados por las dudas de que se vuelva a entrar en la misma sesión de navegador
-  currentSede = null; orderData = {}; deliveryDates = []; isEditing = false;
+  currentSede = null; orderData = {}; orderOriginal = {}; deliveryDates = []; isEditing = false;
   mermaSede = null; mermaLunes = null; mermaDias = []; mermaData = {};
   document.getElementById('main-app').style.display    = 'none';
   document.getElementById('admin-screen').style.display = 'none';
