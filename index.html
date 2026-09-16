@@ -688,7 +688,7 @@
 // ════════════════════════════════════════════════
 // CONFIGURACIÓN
 // ════════════════════════════════════════════════
-const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyG4JJJOZccC673-tEAW5ZtOEn1FC4gYI72DEz3xXJ5iQI3hHqce-_OhFjU_uUSBOUxRw/exec';
+const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxKPG2VEAgveVPZGaFHCOlGqN-RxM1uw_syacMvt2CowHVHgeKg7QO9e5_Sh-MJlzJLlA/exec';
 
 // El ÚNICO catálogo que existe es el de la hoja "Catalogo" del Sheets, activado
 // por sede en la tabla de BigQuery catalogo_activo_ypf. Ya no hay ninguna lista
@@ -860,12 +860,24 @@ async function showAdmin() {
 
   // Catálogo MAESTRO completo (todos los productos posibles, con categoría) —
   // se pide una sola vez, es el mismo para las 4 sedes.
+  let avisoCatalogo = null;
   try {
     const jsonMaestro = await getJson('action=getCatalogoMaestro');
-    productosMaestro = (jsonMaestro.maestro || []).map(p => ({ code: p.codigo, name: p.nombre, categoria: p.categoria }));
+    if (jsonMaestro.status === 'error') {
+      avisoCatalogo = jsonMaestro.message || 'Error desconocido al pedir el catálogo maestro.';
+      productosMaestro = [];
+    } else {
+      productosMaestro = (jsonMaestro.maestro || []).map(p => ({ code: p.codigo, name: p.nombre, categoria: p.categoria }));
+      if (productosMaestro.length === 0) {
+        avisoCatalogo = jsonMaestro.diagnostico || 'El catálogo maestro está vacío.';
+      }
+    }
   } catch (e) {
     productosMaestro = [];
+    avisoCatalogo = (e.message && e.message !== 'NO_AUTH') ? ('Error de conexión: ' + e.message) : null;
   }
+
+  mostrarAvisoAdmin(avisoCatalogo);
 
   await Promise.all(['nordelta','madero', 'alcorta', 'ugarte'].map(async sede => {
     try {
@@ -884,6 +896,21 @@ async function showAdmin() {
   renderAdminPanel('madero');
   renderAdminPanel('alcorta');
   renderAdminPanel('ugarte');
+}
+
+// Muestra (o limpia, si msg es null) un aviso arriba del panel Admin cuando
+// el catálogo maestro no se pudo cargar o vino vacío — así se ve la causa
+// exacta en pantalla en vez de quedar con la lista en blanco sin explicación.
+function mostrarAvisoAdmin(msg) {
+  const existente = document.querySelector('.admin-catalogo-aviso');
+  if (existente) existente.remove();
+  if (!msg) return;
+  const card = document.querySelector('.admin-container .card');
+  if (!card) return;
+  const banner = document.createElement('div');
+  banner.className = 'deadline-passed-banner fade-in admin-catalogo-aviso';
+  banner.innerHTML = `<span class="dpb-icon">⚠️</span><div><strong>No se pudo cargar el catálogo de productos.</strong><br>${escHtml(msg)}</div>`;
+  card.parentNode.insertBefore(banner, card);
 }
 
 function renderAdminPanel(sede) {
