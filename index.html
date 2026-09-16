@@ -461,8 +461,20 @@
     <span id="pedido-realizado-texto"></span>
   </div>
 
+  <!-- PASO -1: cargando catálogo/pedidos — se muestra antes que cualquier otro
+       paso para que el usuario no pueda avanzar a "Realizar pedido" antes de
+       que el catálogo haya llegado del servidor (evita pantallas vacías). -->
+  <div class="card fade-in" id="step-cargando-inicial">
+    <div class="card-label">Un momento</div>
+    <h2 style="margin-bottom:10px">Cargando tu portal…</h2>
+    <p style="font-size:0.85rem;color:var(--ink-soft);display:flex;align-items:center;gap:8px;">
+      <span class="spinner" style="border-top-color: var(--ink); border-color: rgba(31,31,31,0.2);"></span>
+      Trayendo el catálogo y tus pedidos actuales.
+    </p>
+  </div>
+
   <!-- PASO 0: elegir modo -->
-  <div class="card fade-in" id="step-modo">
+  <div class="card fade-in" id="step-modo" style="display:none">
     <div class="card-label">¿Qué querés hacer?</div>
     <h2>Seleccioná una opción</h2>
     <div class="modo-grid">
@@ -702,6 +714,34 @@ let productosMaestro = []; // catálogo maestro completo (todos los productos po
 
 const SEDE_DAYS = { nordelta: [1,3,5,0], madero: [1,2,3,4,5], alcorta: [1,3,5,0], ugarte: [1,3,5,0] };
 const SEDE_LABELS = { nordelta: 'YPF Nordelta', madero: 'YPF Madero', alcorta: "YPF Alcorta", ugarte: "YPF Ugarte" };
+
+// Orden en que se agrupan las categorías en cualquier lista de productos
+// (pantalla de pedido, ajuste, panel admin). Categorías que no estén en esta
+// lista (por si se agrega una nueva en el Sheets y no se actualiza acá) van
+// al final, sin romper el resto del orden.
+const ORDEN_CATEGORIAS = ['Ensalada', 'Bowl', 'Platos', 'Sopa'];
+
+function ordenarPorCategoria(lista) {
+  return [...lista].sort((a, b) => {
+    const ia = ORDEN_CATEGORIAS.indexOf(a.categoria);
+    const ib = ORDEN_CATEGORIAS.indexOf(b.categoria);
+    const oa = ia === -1 ? ORDEN_CATEGORIAS.length : ia;
+    const ob = ib === -1 ? ORDEN_CATEGORIAS.length : ib;
+    if (oa !== ob) return oa - ob;
+    return (a.name || '').localeCompare(b.name || '', 'es');
+  });
+}
+
+// Mapea la respuesta cruda del servidor ({codigo,nombre,categoria}, español)
+// a la convención que usa el resto del código ({code,name,categoria}) y
+// descarta cualquier fila mal formada (sin código o sin nombre) — así una
+// fila corrupta nunca se llega a renderizar como el texto literal
+// "undefined" en la tabla; en cambio, ese producto simplemente no aparece.
+function mapearCatalogo(lista) {
+  return (lista || [])
+    .filter(p => p && p.codigo && p.nombre)
+    .map(p => ({ code: p.codigo, name: p.nombre, categoria: p.categoria || '' }));
+}
 const DAY_NAMES = ['Domingo','Lunes','Martes','Miércoles','Jueves','Viernes','Sábado'];
 const DAY_SHORT = ['Dom','Lun','Mar','Mié','Jue','Vie','Sáb'];
 
@@ -867,7 +907,7 @@ async function showAdmin() {
       avisoCatalogo = jsonMaestro.message || 'Error desconocido al pedir el catálogo maestro.';
       productosMaestro = [];
     } else {
-      productosMaestro = (jsonMaestro.maestro || []).map(p => ({ code: p.codigo, name: p.nombre, categoria: p.categoria }));
+      productosMaestro = ordenarPorCategoria(mapearCatalogo(jsonMaestro.maestro));
       if (productosMaestro.length === 0) {
         avisoCatalogo = jsonMaestro.diagnostico || 'El catálogo maestro está vacío.';
       }
@@ -978,7 +1018,7 @@ function switchAdminTab(sede) {
 // ════════════════════════════════════════════════
 // APP NORMAL
 // ════════════════════════════════════════════════
-function showApp() {
+async function showApp() {
   document.getElementById('login-screen').style.display = 'none';
   document.getElementById('main-app').style.display     = 'flex';
   init();
@@ -990,7 +1030,14 @@ function showApp() {
   const grid = document.getElementById('sede-grid');
   grid.classList.toggle('single-sede', permitidas.length === 1);
 
-  cargarEstadoDesdeServidor();
+  // El catálogo y los pedidos actuales se esperan ACÁ (no en segundo plano)
+  // antes de habilitar el paso 0 — así el usuario no puede llegar a
+  // "Realizar pedido" con catalogoActivo todavía sin datos (eso era lo que
+  // a veces mostraba la tabla vacía).
+  await cargarEstadoDesdeServidor();
+
+  document.getElementById('step-cargando-inicial').style.display = 'none';
+  document.getElementById('step-modo').style.display = '';
 }
 
 // ════════════════════════════════════════════════
@@ -1030,7 +1077,7 @@ function isoDate(d) { return d.toISOString().split('T')[0]; }
 // NAVEGACIÓN ENTRE MODOS (pedido / merma / ajuste)
 // ════════════════════════════════════════════════
 function ocultarTodosLosPasos() {
-  ['step-modo','step-gestion','step-sede','order-section','step-merma-sede','step-merma-calendario','merma-section',
+  ['step-cargando-inicial','step-modo','step-gestion','step-sede','order-section','step-merma-sede','step-merma-calendario','merma-section',
    'step-ajuste-sede','step-ajuste-semana','ajuste-section']
     .forEach(id => { document.getElementById(id).style.display = 'none'; });
   document.getElementById('app-container').style.display    = 'block';
@@ -1163,8 +1210,9 @@ async function cargarEstadoDesdeServidor() {
       );
       if (json.status === 'ok' && json.pedido) pedidosServidor[sede] = json.pedido;
       // json.catalogo llega como [{codigo,nombre,categoria}, ...] (español, del servidor).
-      // Se mapea a la convención que usa el resto del código ({code,name,categoria}).
-      catalogoActivo[sede] = (json.catalogo || []).map(p => ({ code: p.codigo, name: p.nombre, categoria: p.categoria }));
+      // Se mapea a la convención que usa el resto del código ({code,name,categoria})
+      // y se ordena por categoría para que la tabla no quede mezclada.
+      catalogoActivo[sede] = ordenarPorCategoria(mapearCatalogo(json.catalogo));
     } catch(e) {
       catalogoActivo[sede] = [];
       sedesConError.push(sede);
@@ -1829,7 +1877,7 @@ async function seleccionarSemanaAjuste(lunesIso, etiqueta) {
     // catálogo activo + lo que ya estaba pedido esa semana (ver
     // getCatalogoParaAjusteBQ) — por eso se guarda en catalogoActivoParaAjuste
     // y NO en catalogoActivo (que es exclusivo de la pantalla de pedido nuevo).
-    catalogoActivoParaAjuste[ajusteSede] = (json.catalogo || []).map(p => ({ code: p.codigo, name: p.nombre, categoria: p.categoria }));
+    catalogoActivoParaAjuste[ajusteSede] = ordenarPorCategoria(mapearCatalogo(json.catalogo));
 
     const monday = new Date(lunesIso + 'T00:00:00');
     const allowedDows = SEDE_DAYS[ajusteSede];
